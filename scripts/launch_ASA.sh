@@ -11,13 +11,13 @@ initialize_variables() {
     SOURCE_DIR="/usr/games/.wine/drive_c/POK/Steam/steamapps/common/ARK Survival Ascended Dedicated Server/"
     DEST_DIR="$ASA_DIR/Binaries/Win64/"
     PERSISTENT_ACF_FILE="$ASA_DIR/appmanifest_$APPID.acf"
-    
+
     # Clean and format MOD_IDS if it's set
     if [ -n "$MOD_IDS" ]; then
         # Remove all quotes and extra spaces
         MOD_IDS=$(echo "$MOD_IDS" | tr -d '"' | tr -d "'" | tr -d ' ')
     fi
-    
+
     # Validate SERVER_PASSWORD if set
     if [ -n "$SERVER_PASSWORD" ]; then
         if ! [[ "$SERVER_PASSWORD" =~ ^[a-zA-Z0-9]+$ ]]; then
@@ -179,7 +179,7 @@ shutdown_handler() {
     done
 
     echo "World saved. Shutting down the server..."
- 
+
     exit 0
 }
 
@@ -228,7 +228,7 @@ start_server() {
     elif [ "$RCON_ENABLED" = "FALSE" ]; then
         rcon_args="?RCONEnabled=False"
     fi
-    
+
     if [ -n "$CUSTOM_SERVER_ARGS" ]; then
         custom_args="$CUSTOM_SERVER_ARGS"
     fi
@@ -236,6 +236,20 @@ start_server() {
     if [ -n "$SERVER_PASSWORD" ]; then
         server_password_arg="?ServerPassword=${SERVER_PASSWORD}"
     fi
+
+    # setup cron job to pull the "whitelist" every X minutes
+    # if [ "$WHITELIST_ENABLED" = "TRUE" ]; then
+    #   # if the UseExclusiveList is set to true, then we need to set the ExclusiveJoin to true
+    #     echo "Pulling whitelist every $WHITELIST_PULL_INTERVAL minutes..."
+    #     (crontab -l 2>/dev/null; echo "*/$WHITELIST_PULL_INTERVAL * * * * /usr/games/arkmanager cron pull_whitelist") | crontab -
+    # fi
+    # setup cron job to pull the "no check" list every X minutes
+    # if [ "$NO_CHECK_ENABLED" = "TRUE" ]; then
+    #     echo "Pulling no check list every $NO_CHECK_PULL_INTERVAL minutes..."
+    #     (crontab -l 2>/dev/null; echo "*/$NO_CHECK_PULL_INTERVAL * * * * /usr/games/arkmanager cron pull_no_check") | crontab -
+    # fi
+
+
     # Start the server with conditional arguments
     sudo -u games wine "$ASA_DIR/Binaries/Win64/ArkAscendedServer.exe" \
         $MAP_PATH?listen?$session_name_arg?Port=${ASA_PORT}${rcon_args}${server_password_arg}?ServerAdminPassword=${SERVER_ADMIN_PASSWORD} \
