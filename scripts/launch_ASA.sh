@@ -1,5 +1,7 @@
 #!/bin/bash
 
+source /usr/games/scripts/ini_parser.sh
+
 # Initialize environment variables
 initialize_variables() {
     export DISPLAY=:0.0
@@ -18,51 +20,238 @@ initialize_variables() {
         MOD_IDS=$(echo "$MOD_IDS" | tr -d '"' | tr -d "'" | tr -d ' ')
     fi
 
-    # Validate SERVER_PASSWORD if set
+    # Set server admin password from password file if set
+    SERVER_ADMIN_PASSWORD_FILE="${SERVER_ADMIN_PASSWORD_FILE:-""}"
+    if [ -f "$SERVER_ADMIN_PASSWORD_FILE" ]; then
+        SERVER_ADMIN_PASSWORD=$(cat "$SERVER_ADMIN_PASSWORD_FILE")
+    fi
+
+    # Set server admin password from environment variable if set
+    # this will take precedence over the password file
+    SERVER_ADMIN_PASSWORD="${SERVER_ADMIN_PASSWORD:-""}"
+
+    # if the password is not set, generate a random one
+    if [ -z "$SERVER_ADMIN_PASSWORD" ]; then
+        SERVER_ADMIN_PASSWORD=$(tr -dc 'a-zA-Z0-9' < /dev/urandom | fold -w 20 | head -n 1)
+        echo "Generated server admin password: $ASA_SERVER_ADMIN_PASSWORD"
+    fi
+
+    # Set Server password from password file if set
+    SERVER_PASSWORD_FILE="${SERVER_PASSWORD_FILE:-""}"
+    if [ -f "$SERVER_PASSWORD_FILE" ]; then
+        SERVER_PASSWORD=$(cat "$SERVER_PASSWORD_FILE")
+    fi
+    # Set Server password from environment variable if set
+    # this will take precedence over the password file
+    SERVER_PASSWORD="${SERVER_PASSWORD:-""}"
+    # validate the password if it's set
     if [ -n "$SERVER_PASSWORD" ]; then
         if ! [[ "$SERVER_PASSWORD" =~ ^[a-zA-Z0-9]+$ ]]; then
             echo "ERROR: The server password must contain only numbers or characters."
             exit 1
         fi
     fi
-}
 
+    # Set the session name
+    SESSION_NAME="${SESSION_NAME:-ASA Server}"
 
-update_game_user_settings() {
-    local ini_file="$ASA_DIR/Saved/Config/WindowsServer/GameUserSettings.ini"
+    QUERY_PORT="${QUERY_PORT:-27015}"
+    ASA_PORT="${ASA_PORT:-7777}"
 
-    # Check if the file exists
-    if [ -f "$ini_file" ]; then
-        # Prepare MOTD by escaping newline characters
-        local escaped_motd=$(echo "$MOTD" | sed 's/\\n/\\\\n/g')
-
-        # Update or add SERVER_PASSWORD in the ini file
-        if [ -n "$SERVER_PASSWORD" ]; then
-            if grep -q "^ServerPassword=" "$ini_file"; then
-                sed -i "s/^ServerPassword=.*/ServerPassword=$SERVER_PASSWORD/" "$ini_file"
-            else
-                echo "ServerPassword=$SERVER_PASSWORD" >> "$ini_file"
-            fi
-        else
-            # Remove the password line if SERVER_PASSWORD is not set
-            sed -i '/^ServerPassword=/d' "$ini_file"
-        fi
-
-        # Remove existing [MessageOfTheDay] section
-        sed -i '/^\[MessageOfTheDay\]/,/^$/d' "$ini_file"
-
-        # Handle MOTD based on ENABLE_MOTD value
-        if [ "$ENABLE_MOTD" = "TRUE" ]; then
-            # Add the new Message of the Day
-            echo -e "\n[MessageOfTheDay]\nMessage=$escaped_motd\nDuration=$MOTD_DURATION" >> "$ini_file"
-        fi
+    RCON_ENABLED="${RCON_ENABLED:-"TRUE"}"
+    # set RCON_ENABLED to false if not set
+    if [ "${RCON_ENABLED,,}" = "true" ]; then
+        RCON_ENABLED="True"
     else
-        echo "GameUserSettings.ini not found."
+        RCON_ENABLED="False"
+    fi
+    RCON_PORT="${RCON_PORT:-27020}"
+
+
+    DIFFICULTY_OFFSET="${DIFFICULTY_OFFSET:-"1.286000"}"
+    # validate that difficulty offset is a number between 0.01 and 1.0
+    if [ -n "$DIFFICULTY_OFFSET" ]; then
+        if ! [[ "$DIFFICULTY_OFFSET" =~ ^[0-9]+(\.[0-9]+)?$ ]]; then
+            echo "ERROR: The difficulty offset must be a number between 0.01 and 1.0."
+            exit 1
+        fi
+        if (( $(echo "$DIFFICULTY_OFFSET > 1.0" | bc -l) )) || (( $(echo "$DIFFICULTY_OFFSET < 0.01" | bc -l) )); then
+            echo "ERROR: The difficulty offset must be a number between 0.01 and 1.0."
+            exit 1
+        fi
+    fi
+
+    # set PVE to false if not set
+    ENABLE_PVP="${ENABLE_PVP:-"TRUE"}"
+    if [ "${ENABLE_PVP,,}" = "true" ]; then
+        ENABLE_PVE="False"
+    else
+        ENABLE_PVE="True"
+    fi
+
+
+    DINO_DAMAGE_MULTIPLIER="${DINO_DAMAGE_MULTIPLIER:-""}"
+    # validate that the value is a number
+    if [ -n "$DINO_DAMAGE_MULTIPLIER" ]; then
+        if ! [[ "$DINO_DAMAGE_MULTIPLIER" =~ ^-?[0-9]+(\.[0-9]+)?$ ]]; then
+            echo "ERROR: The dino damage multiplier must be a number."
+            exit 1
+        fi
+    fi
+
+    XP_MULTIPLIER="${XP_MULTIPLIER:-""}"
+    # validate that the value is a number
+    if [ -n "$XP_MULTIPLIER" ]; then
+        if ! [[ "$XP_MULTIPLIER" =~ ^-?[0-9]+(\.[0-9]+)?$ ]]; then
+            echo "ERROR: The XP multiplier must be a number."
+            exit 1
+        fi
+    fi
+
+    TAMING_SPEED_MULTIPLIER="${TAMING_SPEED_MULTIPLIER:-""}"
+    # validate that the value is a number
+    if [ -n "$TAMING_SPEED_MULTIPLIER" ]; then
+        if ! [[ "$TAMING_SPEED_MULTIPLIER" =~ ^-?[0-9]+(\.[0-9]+)?$ ]]; then
+            echo "ERROR: The taming speed multiplier must be a number."
+            exit 1
+        fi
+    fi
+
+    HARVEST_AMOUNT_MULTIPLIER="${HARVEST_AMOUNT_MULTIPLIER:-""}"
+    # validate that the value is a number
+    if [ -n "$HARVEST_AMOUNT_MULTIPLIER" ]; then
+        if ! [[ "$HARVEST_AMOUNT_MULTIPLIER" =~ ^-?[0-9]+(\.[0-9]+)?$ ]]; then
+            echo "ERROR: The harvest amount multiplier must be a number."
+            exit 1
+        fi
+    fi
+
+    STRUCTURE_RESISTANCE_MULTIPLIER="${STRUCTURE_RESISTANCE_MULTIPLIER:-""}"
+    # validate that the value is a number
+    if [ -n "$STRUCTURE_RESISTANCE_MULTIPLIER" ]; then
+        if ! [[ "$STRUCTURE_RESISTANCE_MULTIPLIER" =~ ^-?[0-9]+(\.[0-9]+)?$ ]]; then
+            echo "ERROR: The structure resistance multiplier must be a number."
+            exit 1
+        fi
+    fi
+
+    MAX_TAMED_DINOS="${MAX_TAMED_DINOS:-5000}"
+    # validate that the value is a number
+    if [ -n "$MAX_TAMED_DINOS" ]; then
+        if ! [[ "$MAX_TAMED_DINOS" =~ ^-?[0-9]+$ ]]; then
+            echo "ERROR: The max tamed dinos must be a number."
+            exit 1
+        fi
+    fi
+
+    ALLOW_CHEATERS_URL="${ALLOW_CHEATERS_URL:-""}"
+    if [ -n "$ALLOW_CHEATERS_URL" ]; then
+        if ! [[ "$ALLOW_CHEATERS_URL" =~ ^http:// ]]; then
+            echo "ERROR: The allow cheaters url must be a valid URL. It must start with http://; https:// is not supported."
+            exit 1
+        fi
+    fi
+    ALLOW_CHEATERS_UPDATE_INTERVAL="${ALLOW_CHEATERS_UPDATE_INTERVAL:-"600"}"
+    # validate that the value is a number
+    if [ -n "$ALLOW_CHEATERS_UPDATE_INTERVAL" ]; then
+        if ! [[ "$ALLOW_CHEATERS_UPDATE_INTERVAL" =~ ^[0-9]+$ ]]; then
+            echo "ERROR: The allow cheaters update interval must be a number in seconds."
+            exit 1
+        fi
+    fi
+
+    BAN_LIST_URL="${BAN_LIST_URL:-""}"
+    if [ -n "$BAN_LIST_URL" ]; then
+        if ! [[ "$BAN_LIST_URL" =~ ^http:// ]]; then
+            echo "ERROR: The ban list url must be a valid URL. It must start with http://; https:// is not supported."
+            exit 1
+        fi
+    fi
+
+    ALLOW_THIRD_PERSON_VIEW="${ALLOW_THIRD_PERSON_VIEW:-"TRUE"}"
+    if [ "${ALLOW_THIRD_PERSON_VIEW,,}" = "true" ]; then
+        ALLOW_THIRD_PERSON_VIEW="True"
+    else
+        ALLOW_THIRD_PERSON_VIEW="False"
+    fi
+
+    USE_EXCLUSIVE_LIST="${USE_EXCLUSIVE_LIST:-"FALSE"}"
+    if [ "${USE_EXCLUSIVE_LIST,,}" = "true" ]; then
+        USE_EXCLUSIVE_LIST="True"
+    else
+        USE_EXCLUSIVE_LIST="False"
     fi
 }
 
 
+update_game_user_settings() {
+  local ini_file="$ASA_DIR/Saved/Config/WindowsServer/GameUserSettings.ini"
 
+  # [ServerSettings]
+  update_game_user_setting "$ini_file" "ServerSettings" "ServerAdminPassword" "$SERVER_ADMIN_PASSWORD"
+  update_game_user_setting "$ini_file" "ServerSettings" "ServerPassword" "$SERVER_PASSWORD"
+  update_game_user_setting "$ini_file" "ServerSettings" "DifficultyOffset" "$DIFFICULTY_OFFSET"
+  update_game_user_setting "$ini_file" "ServerSettings" "serverPVE" "$ENABLE_PVE"
+  update_game_user_setting "$ini_file" "ServerSettings" "DinoDamageMultiplier" "$DINO_DAMAGE_MULTIPLIER"
+  update_game_user_setting "$ini_file" "ServerSettings" "XPMultiplier" "$XP_MULTIPLIER"
+  update_game_user_setting "$ini_file" "ServerSettings" "TamingSpeedMultiplier" "$TAMING_SPEED_MULTIPLIER"
+  update_game_user_setting "$ini_file" "ServerSettings" "HarvestAmountMultiplier" "$HARVEST_AMOUNT_MULTIPLIER"
+  update_game_user_setting "$ini_file" "ServerSettings" "StructureResistanceMultiplier" "$STRUCTURE_RESISTANCE_MULTIPLIER"
+  update_game_user_setting "$ini_file" "ServerSettings" "MaxTamedDinos" "$MAX_TAMED_DINOS"
+  update_game_user_setting "$ini_file" "ServerSettings" "RCONPort" "$RCON_PORT"
+  update_game_user_setting "$ini_file" "ServerSettings" "RCONEnabled" "$RCON_ENABLED"
+  update_game_user_setting "$ini_file" "ServerSettings" "AllowedCheatersURL" "$ALLOW_CHEATERS_URL"
+  update_game_user_setting "$ini_file" "ServerSettings" "AllowedCheatersUpdateInterval" "$ALLOW_CHEATERS_UPDATE_INTERVAL"
+  update_game_user_setting "$ini_file" "ServerSettings" "BanListURL" "$BAN_LIST_URL"
+  update_game_user_setting "$ini_file" "ServerSettings" "AllowThirdPersonPlayer" "$ALLOW_THIRD_PERSON_VIEW"
+  update_game_user_setting "$ini_file" "ServerSettings" "UseExclusiveList" "$USE_EXCLUSIVE_LIST"
+
+  # [SessionSettings]
+  update_game_user_setting "$ini_file" "SessionSettings" "SessionName" "$SESSION_NAME"
+  update_game_user_setting "$ini_file" "SessionSettings" "QueryPort" "$QUERY_PORT"
+
+  # [/Script/Engine.GameSession]
+  update_game_user_setting "$ini_file" "/Script/Engine.GameSession" "MaxPlayers" "$MAX_PLAYERS"
+
+  # Check if the file exists
+  if [ -f "$ini_file" ]; then
+    # Remove existing [MessageOfTheDay] section
+    sed -i '/^\[MessageOfTheDay\]/,/^$/d' "$ini_file"
+    # Prepare MOTD by escaping newline characters
+    local escaped_motd=$(echo "$MOTD" | sed 's/\\n/\\\\n/g')
+    # Handle MOTD based on ENABLE_MOTD value
+    if [ "${ENABLE_MOTD,,}" = "true" ]; then
+      update_game_user_setting "$ini_file" "MessageOfTheDay" "Message" "$escaped_motd"
+      update_game_user_setting "$ini_file" "MessageOfTheDay" "Duration" "$MOTD_DURATION"
+    else
+      update_game_user_setting "$ini_file" "MessageOfTheDay" "Message" ""
+      update_game_user_setting "$ini_file" "MessageOfTheDay" "Duration" ""
+    fi
+
+  else
+    echo "$ini_file not found."
+  fi
+}
+
+
+update_game_user_setting() {
+    local ini_file="$1"
+    local section="$2"
+    local setting="$3"
+    local value="$4"
+
+    # Check if the file exists
+    if [ -f "$ini_file" ]; then
+        if [ -n "$value" ]; then
+            ini-file set --section "$section" --key "$setting" --value "$value" "$ini_file"
+        else
+            # Remove the setting line if value is not set
+            ini-file del --section "$section" --key "$setting" "$ini_file"
+        fi
+    else
+        echo "$ini_file not found."
+    fi
+}
 
 # Check if the Cluster directory exists
 cluster_dir() {
@@ -223,19 +412,19 @@ start_server() {
     fi
 
     # Set RCON arguments based on RCON_ENABLED environment variable
-    if [ "$RCON_ENABLED" = "TRUE" ]; then
-        rcon_args="?RCONEnabled=True?RCONPort=${RCON_PORT}"
-    elif [ "$RCON_ENABLED" = "FALSE" ]; then
-        rcon_args="?RCONEnabled=False"
-    fi
+    # if [ "$RCON_ENABLED" = "TRUE" ]; then
+    #     rcon_args="?RCONEnabled=True?RCONPort=${RCON_PORT}"
+    # elif [ "$RCON_ENABLED" = "FALSE" ]; then
+    #     rcon_args="?RCONEnabled=False"
+    # fi
 
     if [ -n "$CUSTOM_SERVER_ARGS" ]; then
         custom_args="$CUSTOM_SERVER_ARGS"
     fi
 
-    if [ -n "$SERVER_PASSWORD" ]; then
-        server_password_arg="?ServerPassword=${SERVER_PASSWORD}"
-    fi
+    # if [ -n "$SERVER_PASSWORD" ]; then
+    #     server_password_arg="?ServerPassword=${SERVER_PASSWORD}"
+    # fi
 
     # setup cron job to pull the "whitelist" every X minutes
     # if [ "$WHITELIST_ENABLED" = "TRUE" ]; then

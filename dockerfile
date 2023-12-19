@@ -27,11 +27,14 @@ RUN groupmod -o -g $PGID games && \
 USER root
 
 RUN apt-get update && \
-    apt-get install -y jq curl unzip nano && \
-    rm -rf /var/lib/apt/lists/* && \
-    curl -L https://github.com/itzg/rcon-cli/releases/download/1.6.3/rcon-cli_1.6.3_linux_amd64.tar.gz | tar xvz && \
-    mv rcon-cli /usr/local/bin/ && \
-    chmod +x /usr/local/bin/rcon-cli
+  apt-get install -y jq curl unzip nano && \
+  rm -rf /var/lib/apt/lists/* && \
+  curl -L https://github.com/itzg/rcon-cli/releases/download/1.6.3/rcon-cli_1.6.3_linux_amd64.tar.gz | tar xvz && \
+  mv rcon-cli /usr/local/bin/ && \
+  chmod +x /usr/local/bin/rcon-cli && \
+  curl -L "https://github.com/bitnami/ini-file/releases/download/v1.4.6/ini-file-linux-amd64.tar.gz" | tar xvz && \
+  mv ini-file-linux-amd64 /usr/local/bin/ini-file && \
+  chmod +x /usr/local/bin/ini-file
 
 # Switch to games user
 USER games
@@ -50,7 +53,7 @@ RUN ls -R "$WINEPREFIX/drive_c/POK"
 # Install Steam app dependencies
 RUN ln -s "$PROGRAM_FILES/Steam" /usr/games/Steam && \
     mkdir -p /usr/games/Steam/steamapps/common && \
-    find /usr/games/Steam/steamapps/common -maxdepth 0 -not -name "Steamworks Shared" 
+    find /usr/games/Steam/steamapps/common -maxdepth 0 -not -name "Steamworks Shared"
 
 # Explicitly set the ownership of WINEPREFIX directory to games
 RUN chown -R games:games "$WINEPREFIX"

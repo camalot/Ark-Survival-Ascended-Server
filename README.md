@@ -17,6 +17,7 @@ This Docker image is designed to run a dedicated server for the game Ark Surviva
 | `PGID`                        | `1001`            | The GID to run server as                                                                  |
 | `BATTLEEYE`                   | `TRUE`            | Set to TRUE to use BattleEye, FALSE to not use BattleEye                                  |
 | `RCON_ENABLED`                | `TRUE`            | Needed for Graceful Shutdown                                                              |
+| `RCON_PORT`                   | `27020`           | Rcon Port Use for Most Server Operations                                                  |
 | `DISPLAY_POK_MONITOR_MESSAGE` | `TRUE`            | FALSE to suppress the Server Monitor Shutdown                                             |
 | `UPDATE_SERVER`               | `TRUE`            | Enable or disable update checks                                                           |
 | `CHECK_FOR_UPDATE_INTERVAL`   | `24`              | Check for Updates interval in hours                                                       |
@@ -24,12 +25,13 @@ This Docker image is designed to run a dedicated server for the game Ark Surviva
 | `ENABLE_MOTD`                 | `FALSE`           | Enable or disable Message of the Day                                                      |
 | `MOTD`                        |                   | Message of the Day                                                                        |
 | `MOTD_DURATION`               | `30`              | Duration for the Message of the Day                                                       |
-| `MAP_NAME`                    | `TheIsland`       | The map name (`TheIsland') Or Custom Map Name Can Be Enter aswell                         |
+| `MAP_NAME`                    | `TheIsland`       | The map name (`TheIsland') Or Custom Map Name Can Be Enter as well                        |
 | `SESSION_NAME`                | `Server_name`     | The session name for the server                                                           |
+| `SERVER_ADMIN_PASSWORD_FILE`  |                   |                                                                                           |
 | `SERVER_ADMIN_PASSWORD`       | `MyPassword`      | The admin password for the server                                                         |
+| `SERVER_PASSWORD_FILE`        |                   |                                                                                           |
 | `SERVER_PASSWORD`             |                   | Set a server password or leave it blank (ONLY NUMBERS AND CHARACTERS ARE ALLOWED BY DEVS) |
 | `ASA_PORT`                    | `7777`            | The game port for the server                                                              |
-| `RCON_PORT`                   | `27020`           | Rcon Port Use for Most Server Operations                                                  |
 | `MAX_PLAYERS`                 | `127`             | Max allowed players                                                                       |
 | `CLUSTER_ID`                  | `cluster`         | The Cluster ID for the server                                                             | 
 | `MOD_IDS`                     |                   | Add your mod IDs here, separated by commas, e.g., 123456789,987654321                     |
@@ -196,4 +198,3 @@ These commands stop the currently running container and start a new one with the
     <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=Acekorneya/Ark-Survival-Ascended-Server&type=Date" />
   </picture>
 </a>
-
