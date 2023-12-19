@@ -200,9 +200,9 @@ update_game_user_settings() {
   update_game_user_setting "$ini_file" "ServerSettings" "MaxTamedDinos" "$MAX_TAMED_DINOS"
   update_game_user_setting "$ini_file" "ServerSettings" "RCONPort" "$RCON_PORT"
   update_game_user_setting "$ini_file" "ServerSettings" "RCONEnabled" "$RCON_ENABLED"
-  update_game_user_setting "$ini_file" "ServerSettings" "AllowedCheatersURL" "$ALLOW_CHEATERS_URL"
+  update_game_user_setting "$ini_file" "ServerSettings" "AllowedCheatersURL" "\"$ALLOW_CHEATERS_URL\""
   update_game_user_setting "$ini_file" "ServerSettings" "AllowedCheatersUpdateInterval" "$ALLOW_CHEATERS_UPDATE_INTERVAL"
-  update_game_user_setting "$ini_file" "ServerSettings" "BanListURL" "$BAN_LIST_URL"
+  update_game_user_setting "$ini_file" "ServerSettings" "BanListURL" "\"$BAN_LIST_URL\""
   update_game_user_setting "$ini_file" "ServerSettings" "AllowThirdPersonPlayer" "$ALLOW_THIRD_PERSON_VIEW"
   update_game_user_setting "$ini_file" "ServerSettings" "UseExclusiveList" "$USE_EXCLUSIVE_LIST"
 
