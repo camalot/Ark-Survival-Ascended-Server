@@ -228,10 +228,10 @@ update_game_user_settings() {
 
     # FIX for Urls that need to be surrounded by quotes since ini-file wont do it
     if [ -n "$ALLOW_CHEATERS_URL" ]; then
-      sed -i "s/AllowedCheatersURL=.*/AllowedCheatersURL=\"${ALLOW_CHEATERS_URL}\"/g" "$ini_file"
+      sed -i "s<AllowedCheatersURL=.*<AllowedCheatersURL=\"${ALLOW_CHEATERS_URL}\"<g" "$ini_file"
     fi
     if [ -n "$BAN_LIST_URL" ]; then
-      sed -i "s/BanListURL=.*/BanListURL=\"${BAN_LIST_URL}\"/g" "$ini_file"
+      sed -i "s<BanListURL=.*<BanListURL=\"${BAN_LIST_URL}\"<g" "$ini_file"
     fi
 
   else
