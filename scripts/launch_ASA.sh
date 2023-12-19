@@ -74,8 +74,7 @@ initialize_variables() {
             exit 1
         fi
         if (( $(echo "$DIFFICULTY_OFFSET > 1.0" | bc -l) )) || (( $(echo "$DIFFICULTY_OFFSET < 0.01" | bc -l) )); then
-            echo "ERROR: The difficulty offset must be a number between 0.01 and 1.0."
-            exit 1
+            echo "WARNING: The difficulty offset must be a number between 0.01 and 1.0."
         fi
     fi
 
