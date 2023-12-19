@@ -242,14 +242,16 @@ update_game_user_setting() {
 
     # Check if the file exists
     if [ -f "$ini_file" ]; then
-        if [ -n "$value" ]; then
-            ini-file set --section "$section" --key "$setting" --value "$value" "$ini_file"
-        else
-            # Remove the setting line if value is not set
-            ini-file del --section "$section" --key "$setting" "$ini_file"
-        fi
+      if [ -n "$value" ]; then
+        echo "Updating [$section] $setting=$value in $ini_file"
+        ini-file set --section "$section" --key "$setting" --value "$value" "$ini_file"
+      else
+        echo "Removing [$section] $setting from $ini_file"
+        # Remove the setting line if value is not set
+        ini-file del --section "$section" --key "$setting" "$ini_file"
+      fi
     else
-        echo "$ini_file not found."
+      echo "$ini_file not found."
     fi
 }
 
@@ -405,10 +407,11 @@ start_server() {
     fi
 
     # Set BattlEye flag based on environment variable
-    if [ "$BATTLEEYE" = "TRUE" ]; then
-        battleye_arg="-UseBattlEye"
-    elif [ "$BATTLEEYE" = "FALSE" ]; then
-        battleye_arg="-NoBattlEye"
+    if [ "${BATTLEEYE,,}" = "true" ]; then
+      battleye_arg="-UseBattlEye"
+    else
+      echo "WARNING: BattlEye is disabled."
+      battleye_arg="-NoBattlEye"
     fi
 
     # Set RCON arguments based on RCON_ENABLED environment variable
@@ -419,7 +422,7 @@ start_server() {
     # fi
 
     if [ -n "$CUSTOM_SERVER_ARGS" ]; then
-        custom_args="$CUSTOM_SERVER_ARGS"
+      custom_args="$CUSTOM_SERVER_ARGS"
     fi
 
     # if [ -n "$SERVER_PASSWORD" ]; then
