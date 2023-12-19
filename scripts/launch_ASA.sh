@@ -197,9 +197,9 @@ update_game_user_settings() {
   update_game_user_setting "$ini_file" "ServerSettings" "MaxTamedDinos" "$MAX_TAMED_DINOS"
   update_game_user_setting "$ini_file" "ServerSettings" "RCONPort" "$RCON_PORT"
   update_game_user_setting "$ini_file" "ServerSettings" "RCONEnabled" "$RCON_ENABLED"
-  update_game_user_setting "$ini_file" "ServerSettings" "AllowedCheatersURL" "'$ALLOW_CHEATERS_URL'"
+  update_game_user_setting "$ini_file" "ServerSettings" "AllowedCheatersURL" "$ALLOW_CHEATERS_URL"
   update_game_user_setting "$ini_file" "ServerSettings" "AllowedCheatersUpdateInterval" "$ALLOW_CHEATERS_UPDATE_INTERVAL"
-  update_game_user_setting "$ini_file" "ServerSettings" "BanListURL" "'$BAN_LIST_URL'"
+  update_game_user_setting "$ini_file" "ServerSettings" "BanListURL" "$BAN_LIST_URL"
   update_game_user_setting "$ini_file" "ServerSettings" "AllowThirdPersonPlayer" "$ALLOW_THIRD_PERSON_VIEW"
   update_game_user_setting "$ini_file" "ServerSettings" "UseExclusiveList" "$USE_EXCLUSIVE_LIST"
 
@@ -223,6 +223,15 @@ update_game_user_settings() {
     else
       update_game_user_setting "$ini_file" "MessageOfTheDay" "Message" ""
       update_game_user_setting "$ini_file" "MessageOfTheDay" "Duration" ""
+    fi
+
+
+    # FIX for Urls that need to be surrounded by quotes since ini-file wont do it
+    if [ -n "$ALLOW_CHEATERS_URL" ]; then
+      sed -i 's/AllowedCheatersURL=.*/AllowedCheatersURL="'${ALLOW_CHEATERS_URL}'"/g' "$ini_file"
+    fi
+    if [ -n "$BAN_LIST_URL" ]; then
+      sed -i 's/BanListURL=.*/BanListURL="'${BAN_LIST_URL}'"/g' "$ini_file"
     fi
 
   else
