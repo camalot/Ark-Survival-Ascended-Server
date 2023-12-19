@@ -27,7 +27,7 @@ RUN groupmod -o -g $PGID games && \
 USER root
 
 RUN apt-get update && \
-  apt-get install -y jq curl unzip nano && \
+  apt-get install -y jq curl unzip nano bc && \
   rm -rf /var/lib/apt/lists/* && \
   curl -L https://github.com/itzg/rcon-cli/releases/download/1.6.3/rcon-cli_1.6.3_linux_amd64.tar.gz | tar xvz && \
   mv rcon-cli /usr/local/bin/ && \
