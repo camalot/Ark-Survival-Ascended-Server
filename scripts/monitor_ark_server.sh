@@ -99,7 +99,7 @@ while true; do
         continue  # Skip the rest of this loop iteration
     fi
 
-    if [ "${UPDATE_SERVER}" = "TRUE" ]; then
+    if [ "${UPDATE_SERVER,,}" = "true" ]; then
         # Check for updates at the interval specified by CHECK_FOR_UPDATE_INTERVAL
         current_time=$(date +%s)
         last_update_check_time=${last_update_check_time:-0}

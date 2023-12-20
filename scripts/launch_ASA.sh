@@ -18,6 +18,14 @@ initialize_variables() {
         MOD_IDS=$(echo "$MOD_IDS" | tr -d '"' | tr -d "'" | tr -d ' ')
     fi
 
+    RESET_GAME_SETTINGS="${RESET_GAME_SETTINGS:-"FALSE"}"
+    if [ "${RESET_GAME_SETTINGS,,}" = "true" ]; then
+      # copy the default game.ini and gameusersettings.ini files from /usr/games/defaults/
+      echo "Resetting game settings to defaults"
+      cp -f /usr/games/defaults/game.ini "$ASA_DIR/Saved/Config/WindowsServer/Game.ini"
+      cp -f /usr/games/defaults/gameusersettings.ini "$ASA_DIR/Saved/Config/WindowsServer/GameUserSettings.ini"
+    fi
+
     # Set server admin password from password file if set
     SERVER_ADMIN_PASSWORD_FILE="${SERVER_ADMIN_PASSWORD_FILE:-""}"
     if [ -f "$SERVER_ADMIN_PASSWORD_FILE" ]; then
@@ -56,7 +64,7 @@ initialize_variables() {
     QUERY_PORT="${QUERY_PORT:-27015}"
     ASA_PORT="${ASA_PORT:-7777}"
 
-    RCON_ENABLED="${RCON_ENABLED:-"TRUE"}"
+    RCON_ENABLED="${RCON_ENABLED:-""}"
     # set RCON_ENABLED to false if not set
     if [ "${RCON_ENABLED,,}" = "true" ]; then
         RCON_ENABLED="True"
@@ -64,7 +72,25 @@ initialize_variables() {
         RCON_ENABLED="False"
     fi
     RCON_PORT="${RCON_PORT:-27020}"
+    RCON_SERVER_GAME_LOG_BUFFER="${RCON_SERVER_GAME_LOG_BUFFER:-""}"
+    # validate that the value is a number
+    if [ -n "$RCON_SERVER_GAME_LOG_BUFFER" ]; then
+        if ! [[ "$RCON_SERVER_GAME_LOG_BUFFER" =~ ^[0-9]+$ ]]; then
+            echo "ERROR: The RCON server game log buffer must be a number."
+            exit 1
+        fi
+    fi
 
+    AUTO_SAVE_PERIOD_MINUTES="${AUTO_SAVE_PERIOD_MINUTES:-""}"
+
+    IMPLANT_SUICIDE_CD="${IMPLANT_SUICIDE_CD,-""}"
+    # validate that the value is a number
+    if [ -n "$IMPLANT_SUICIDE_CD" ]; then
+        if ! [[ "$IMPLANT_SUICIDE_CD" =~ ^[0-9]+$ ]]; then
+            echo "ERROR: The implant suicide cd must be a number."
+            exit 1
+        fi
+    fi
 
     DIFFICULTY_OFFSET="${DIFFICULTY_OFFSET:-""}"
     # validate that difficulty offset is a number between 0.01 and 1.0
@@ -96,15 +122,56 @@ initialize_variables() {
         fi
     fi
 
+    ITEM_STACK_SIZE_MULTIPLIER="${ITEM_STACK_SIZE_MULTIPLIER:-""}"
+    # validate that the value is a number
+    if [ -n "$ITEM_STACK_SIZE_MULTIPLIER" ]; then
+        if ! [[ "$ITEM_STACK_SIZE_MULTIPLIER" =~ ^-?[0-9]+(\.[0-9]+)?$ ]]; then
+            echo "ERROR: The item stack size multiplier must be a number."
+            exit 1
+        fi
+    fi
+
+    STRUCTURE_PREVENT_RESOURCE_RADIUS_MULTIPLIER="${STRUCTURE_PREVENT_RESOURCE_RADIUS_MULTIPLIER:-""}"
+    # validate that the value is a number
+    if [ -n "$STRUCTURE_PREVENT_RESOURCE_RADIUS_MULTIPLIER" ]; then
+        if ! [[ "$STRUCTURE_PREVENT_RESOURCE_RADIUS_MULTIPLIER" =~ ^-?[0-9]+(\.[0-9]+)?$ ]]; then
+            echo "ERROR: The structure prevent resource radius multiplier must be a number."
+            exit 1
+        fi
+    fi
+
+    TRIBE_NAME_CHANGE_COOLDOWN="${TRIBE_NAME_CHANGE_COOLDOWN:-""}"
+    # validate that the value is a number
+    if [ -n "$TRIBE_NAME_CHANGE_COOLDOWN" ]; then
+        if ! [[ "$TRIBE_NAME_CHANGE_COOLDOWN" =~ ^[0-9]+(\.[0-9]+)?$ ]]; then
+            echo "ERROR: The tribe name change cooldown must be a number."
+            exit 1
+        fi
+    fi
+
     # set PVE to false if not set
-    ENABLE_PVP="${ENABLE_PVP:-"TRUE"}"
+    ENABLE_PVP="${ENABLE_PVP:-""}"
     if [ "${ENABLE_PVP,,}" = "true" ]; then
         ENABLE_PVE="False"
     elif [ "${ENABLE_PVP,,}" = "false" ]; then
         ENABLE_PVE="True"
     fi
 
-    SHOW_MAP_PLAYER_LOCATION="${SHOW_MAP_PLAYER_LOCATION:-"TRUE"}"
+    ALLOW_HITMARKERS="${ALLOW_HITMARKERS:-""}"
+    if [ "${ALLOW_HITMARKERS,,}" = "true" ]; then
+        ALLOW_HITMARKERS="True"
+    elif [ "${ALLOW_HITMARKERS,,}" = "false" ]; then
+        ALLOW_HITMARKERS="False"
+    fi
+
+    ALLOW_HIDE_DAMAGE_SOURCE_FROM_LOGS="${ALLOW_HIDE_DAMAGE_SOURCE_FROM_LOGS:-""}"
+    if [ "${ALLOW_HIDE_DAMAGE_SOURCE_FROM_LOGS,,}" = "true" ]; then
+        ALLOW_HIDE_DAMAGE_SOURCE_FROM_LOGS="True"
+    elif [ "${ALLOW_HIDE_DAMAGE_SOURCE_FROM_LOGS,,}" = "false" ]; then
+        ALLOW_HIDE_DAMAGE_SOURCE_FROM_LOGS="False"
+    fi
+
+    SHOW_MAP_PLAYER_LOCATION="${SHOW_MAP_PLAYER_LOCATION:-""}"
     if [ "${SHOW_MAP_PLAYER_LOCATION,,}" = "true" ]; then
         SHOW_MAP_PLAYER_LOCATION="True"
     elif [ "${SHOW_MAP_PLAYER_LOCATION,,}" = "false" ]; then
@@ -116,6 +183,94 @@ initialize_variables() {
         SERVER_CROSSHAIR="True"
     elif [ "${SERVER_CROSSHAIR,,}" = "false" ]; then
         SERVER_CROSSHAIR="False"
+    fi
+
+    DISABLE_DINO_DECAY_PVE="${DISABLE_DINO_DECAY_PVE:-""}"
+    if [ "${DISABLE_DINO_DECAY_PVE,,}" = "true" ]; then
+        DISABLE_DINO_DECAY_PVE="True"
+    elif [ "${DISABLE_DINO_DECAY_PVE,,}" = "false" ]; then
+        DISABLE_DINO_DECAY_PVE="False"
+    fi
+
+    ALWAYS_ALLOW_STRUCTURE_PICKUP="${ALWAYS_ALLOW_STRUCTURE_PICKUP:-""}"
+    if [ "${ALWAYS_ALLOW_STRUCTURE_PICKUP,,}" = "true" ]; then
+        ALWAYS_ALLOW_STRUCTURE_PICKUP="True"
+    elif [ "${ALWAYS_ALLOW_STRUCTURE_PICKUP,,}" = "false" ]; then
+        ALWAYS_ALLOW_STRUCTURE_PICKUP="False"
+    fi
+
+    ALLOW_CRATE_SPAWNS_ON_TOP_OF_STRUCTURES="${ALLOW_CRATE_SPAWNS_ON_TOP_OF_STRUCTURES:-""}"
+    if [ "${ALLOW_CRATE_SPAWNS_ON_TOP_OF_STRUCTURES,,}" = "true" ]; then
+        ALLOW_CRATE_SPAWNS_ON_TOP_OF_STRUCTURES="True"
+    elif [ "${ALLOW_CRATE_SPAWNS_ON_TOP_OF_STRUCTURES,,}" = "false" ]; then
+        ALLOW_CRATE_SPAWNS_ON_TOP_OF_STRUCTURES="False"
+    fi
+
+    ALLOW_FLYER_CARRY_PVE="${ALLOW_FLYER_CARRY_PVE:-""}"
+    if [ "${ALLOW_FLYER_CARRY_PVE,,}" = "true" ]; then
+        ALLOW_FLYER_CARRY_PVE="True"
+    elif [ "${ALLOW_FLYER_CARRY_PVE,,}" = "false" ]; then
+        ALLOW_FLYER_CARRY_PVE="False"
+    fi
+
+    PREVENT_DOWNLOAD_SURVIVORS="${PREVENT_DOWNLOAD_SURVIVORS:-""}"
+    if [ "${PREVENT_DOWNLOAD_SURVIVORS,,}" = "true" ]; then
+        PREVENT_DOWNLOAD_SURVIVORS="True"
+    elif [ "${PREVENT_DOWNLOAD_SURVIVORS,,}" = "false" ]; then
+        PREVENT_DOWNLOAD_SURVIVORS="False"
+    fi
+
+    PREVENT_DOWNLOAD_ITEMS="${PREVENT_DOWNLOAD_ITEMS:-""}"
+    if [ "${PREVENT_DOWNLOAD_ITEMS,,}" = "true" ]; then
+        PREVENT_DOWNLOAD_ITEMS="True"
+    elif [ "${PREVENT_DOWNLOAD_ITEMS,,}" = "false" ]; then
+        PREVENT_DOWNLOAD_ITEMS="False"
+    fi
+
+    PREVENT_DOWNLOAD_DINOS="${PREVENT_DOWNLOAD_DINOS:-""}"
+    if [ "${PREVENT_DOWNLOAD_DINOS,,}" = "true" ]; then
+        PREVENT_DOWNLOAD_DINOS="True"
+    elif [ "${PREVENT_DOWNLOAD_DINOS,,}" = "false" ]; then
+        PREVENT_DOWNLOAD_DINOS="False"
+    fi
+
+    PREVENT_UPLOAD_SURVIVORS="${PREVENT_UPLOAD_SURVIVORS:-""}"
+    if [ "${PREVENT_UPLOAD_SURVIVORS,,}" = "true" ]; then
+        PREVENT_UPLOAD_SURVIVORS="True"
+    elif [ "${PREVENT_UPLOAD_SURVIVORS,,}" = "false" ]; then
+        PREVENT_UPLOAD_SURVIVORS="False"
+    fi
+
+    PREVENT_UPLOAD_ITEMS="${PREVENT_UPLOAD_ITEMS:-""}"
+    if [ "${PREVENT_UPLOAD_ITEMS,,}" = "true" ]; then
+        PREVENT_UPLOAD_ITEMS="True"
+    elif [ "${PREVENT_UPLOAD_ITEMS,,}" = "false" ]; then
+        PREVENT_UPLOAD_ITEMS="False"
+    fi
+
+    PREVENT_UPLOAD_DINOS="${PREVENT_UPLOAD_DINOS:-""}"
+    if [ "${PREVENT_UPLOAD_DINOS,,}" = "true" ]; then
+        PREVENT_UPLOAD_DINOS="True"
+    elif [ "${PREVENT_UPLOAD_DINOS,,}" = "false" ]; then
+        PREVENT_UPLOAD_DINOS="False"
+    fi
+
+    STRUCTURE_PICKUP_TIME_AFTER_PLACEMENT="${STRUCTURE_PICKUP_TIME_AFTER_PLACEMENT:-""}"
+    # validate that the value is a number
+    if [ -n "$STRUCTURE_PICKUP_TIME_AFTER_PLACEMENT" ]; then
+        if ! [[ "$STRUCTURE_PICKUP_TIME_AFTER_PLACEMENT" =~ ^[0-9]+$ ]]; then
+            echo "ERROR: The structure pickup time after placement must be a number."
+            exit 1
+        fi
+    fi
+
+    STRUCTURE_PICKUP_HOLD_DURATION="${STRUCTURE_PICKUP_HOLD_DURATION:-""}"
+    # validate that the value is a number
+    if [ -n "$STRUCTURE_PICKUP_HOLD_DURATION" ]; then
+        if ! [[ "$STRUCTURE_PICKUP_HOLD_DURATION" =~ ^-?[0-9]+(\.[0-9]+)?$ ]]; then
+            echo "ERROR: The structure pickup hold duration must be a number."
+            exit 1
+        fi
     fi
 
     MAX_STRUCTURES_IN_RANGE="${MAX_STRUCTURES_IN_RANGE:-""}"
@@ -136,11 +291,65 @@ initialize_variables() {
         fi
     fi
 
+    KICK_IDLE_PLAYERS_PERIOD="${KICK_IDLE_PLAYERS_PERIOD:-""}"
+    # validate that the value is a number
+    if [ -n "$KICK_IDLE_PLAYERS_PERIOD" ]; then
+        if ! [[ "$KICK_IDLE_PLAYERS_PERIOD" =~ ^[0-9]+$ ]]; then
+            echo "ERROR: The kick idle players period must be a number."
+            exit 1
+        fi
+    fi
+
+    PER_PLATFORM_MAX_STRUCTURES_MULTIPLIER="${PER_PLATFORM_MAX_STRUCTURES_MULTIPLIER:-""}"
+    # validate that the value is a number
+    if [ -n "$PER_PLATFORM_MAX_STRUCTURES_MULTIPLIER" ]; then
+        if ! [[ "$PER_PLATFORM_MAX_STRUCTURES_MULTIPLIER" =~ ^-?[0-9]+(\.[0-9]+)?$ ]]; then
+            echo "ERROR: The per platform max structures multiplier must be a number."
+            exit 1
+        fi
+    fi
+
+    PLATFORM_SADDLE_BUILD_AREA_BOUNDS_MULTIPLIER="${PLATFORM_SADDLE_BUILD_AREA_BOUNDS_MULTIPLIER:-""}"
+    # validate that the value is a number
+    if [ -n "$PLATFORM_SADDLE_BUILD_AREA_BOUNDS_MULTIPLIER" ]; then
+        if ! [[ "$PLATFORM_SADDLE_BUILD_AREA_BOUNDS_MULTIPLIER" =~ ^-?[0-9]+(\.[0-9]+)?$ ]]; then
+            echo "ERROR: The platform saddle build area bounds multiplier must be a number."
+            exit 1
+        fi
+    fi
+
     DINO_DAMAGE_MULTIPLIER="${DINO_DAMAGE_MULTIPLIER:-""}"
     # validate that the value is a number
     if [ -n "$DINO_DAMAGE_MULTIPLIER" ]; then
         if ! [[ "$DINO_DAMAGE_MULTIPLIER" =~ ^-?[0-9]+(\.[0-9]+)?$ ]]; then
             echo "ERROR: The dino damage multiplier must be a number."
+            exit 1
+        fi
+    fi
+
+    PVE_DINO_DECAY_PERIOD_MULTIPLIER="${PVE_DINO_DECAY_PERIOD_MULTIPLIER:-""}"
+    # validate that the value is a number
+    if [ -n "$PVE_DINO_DECAY_PERIOD_MULTIPLIER" ]; then
+        if ! [[ "$PVE_DINO_DECAY_PERIOD_MULTIPLIER" =~ ^-?[0-9]+(\.[0-9]+)?$ ]]; then
+            echo "ERROR: The PVE dino decay period multiplier must be a number."
+            exit 1
+        fi
+    fi
+
+    PVE_STRUCTURE_DECAY_PERIOD_MULTIPLIER="${PVE_STRUCTURE_DECAY_PERIOD_MULTIPLIER:-""}"
+    # validate that the value is a number
+    if [ -n "$PVE_STRUCTURE_DECAY_PERIOD_MULTIPLIER" ]; then
+        if ! [[ "$PVE_STRUCTURE_DECAY_PERIOD_MULTIPLIER" =~ ^-?[0-9]+(\.[0-9]+)?$ ]]; then
+            echo "ERROR: The PVE structure decay period multiplier must be a number."
+            exit 1
+        fi
+    fi
+
+    RAID_DINO_CHARACTER_FOOD_DRAIN_MULTIPLIER="${RAID_DINO_CHARACTER_FOOD_DRAIN_MULTIPLIER:-""}"
+    # validate that the value is a number
+    if [ -n "$RAID_DINO_CHARACTER_FOOD_DRAIN_MULTIPLIER" ]; then
+        if ! [[ "$RAID_DINO_CHARACTER_FOOD_DRAIN_MULTIPLIER" =~ ^-?[0-9]+(\.[0-9]+)?$ ]]; then
+            echo "ERROR: The raid dino character food drain multiplier must be a number."
             exit 1
         fi
     fi
@@ -186,6 +395,213 @@ initialize_variables() {
     if [ -n "$OXYGEN_SWIM_SPEED_STAT_MULTIPLIER" ]; then
         if ! [[ "$OXYGEN_SWIM_SPEED_STAT_MULTIPLIER" =~ ^-?[0-9]+(\.[0-9]+)?$ ]]; then
             echo "ERROR: The oxygen swim speed stat multiplier must be a number."
+            exit 1
+        fi
+    fi
+
+    BABY_IMPRINTING_STAT_SCALE_MULTIPLIER="${BABY_IMPRINTING_STAT_SCALE_MULTIPLIER:-""}"
+    # validate that the value is a number
+    if [ -n "$BABY_IMPRINTING_STAT_SCALE_MULTIPLIER" ]; then
+        if ! [[ "$BABY_IMPRINTING_STAT_SCALE_MULTIPLIER" =~ ^-?[0-9]+(\.[0-9]+)?$ ]]; then
+            echo "ERROR: The baby imprinting stat scale multiplier must be a number."
+            exit 1
+        fi
+    fi
+
+    BABY_CUDDLE_INTERVAL_MULTIPLIER="${BABY_CUDDLE_INTERVAL_MULTIPLIER:-""}"
+    # validate that the value is a number
+    if [ -n "$BABY_CUDDLE_INTERVAL_MULTIPLIER" ]; then
+        if ! [[ "$BABY_CUDDLE_INTERVAL_MULTIPLIER" =~ ^-?[0-9]+(\.[0-9]+)?$ ]]; then
+            echo "ERROR: The baby cuddle interval multiplier must be a number."
+            exit 1
+        fi
+    fi
+
+    BABY_CUDDLE_GRACE_PERIOD_MULTIPLIER="${BABY_CUDDLE_GRACE_PERIOD_MULTIPLIER:-""}"
+    # validate that the value is a number
+    if [ -n "$BABY_CUDDLE_GRACE_PERIOD_MULTIPLIER" ]; then
+        if ! [[ "$BABY_CUDDLE_GRACE_PERIOD_MULTIPLIER" =~ ^-?[0-9]+(\.[0-9]+)?$ ]]; then
+            echo "ERROR: The baby cuddle grace period multiplier must be a number."
+            exit 1
+        fi
+    fi
+
+    BABY_CUDDLE_LOSE_IMPRINT_QUALITY_SPEED_MULTIPLIER="${BABY_CUDDLE_LOSE_IMPRINT_QUALITY_SPEED_MULTIPLIER:-""}"
+    # validate that the value is a number
+    if [ -n "$BABY_CUDDLE_LOSE_IMPRINT_QUALITY_SPEED_MULTIPLIER" ]; then
+        if ! [[ "$BABY_CUDDLE_LOSE_IMPRINT_QUALITY_SPEED_MULTIPLIER" =~ ^-?[0-9]+(\.[0-9]+)?$ ]]; then
+            echo "ERROR: The baby cuddle lose imprint quality speed multiplier must be a number."
+            exit 1
+        fi
+    fi
+
+    GLOBAL_SPOILING_TIME_MULTIPLIER="${GLOBAL_SPOILING_TIME_MULTIPLIER:-""}"
+    # validate that the value is a number
+    if [ -n "$GLOBAL_SPOILING_TIME_MULTIPLIER" ]; then
+        if ! [[ "$GLOBAL_SPOILING_TIME_MULTIPLIER" =~ ^-?[0-9]+(\.[0-9]+)?$ ]]; then
+            echo "ERROR: The global spoiling time multiplier must be a number."
+            exit 1
+        fi
+    fi
+
+    GLOBAL_ITEM_DECOMPOSITION_TIME_MULTIPLIER="${GLOBAL_ITEM_DECOMPOSITION_TIME_MULTIPLIER:-""}"
+    # validate that the value is a number
+    if [ -n "$GLOBAL_ITEM_DECOMPOSITION_TIME_MULTIPLIER" ]; then
+        if ! [[ "$GLOBAL_ITEM_DECOMPOSITION_TIME_MULTIPLIER" =~ ^-?[0-9]+(\.[0-9]+)?$ ]]; then
+            echo "ERROR: The global item decomposition time multiplier must be a number."
+            exit 1
+        fi
+    fi
+
+    GLOBAL_CORPSE_DECOMPOSITION_TIME_MULTIPLIER="${GLOBAL_CORPSE_DECOMPOSITION_TIME_MULTIPLIER:-""}"
+    # validate that the value is a number
+    if [ -n "$GLOBAL_CORPSE_DECOMPOSITION_TIME_MULTIPLIER" ]; then
+        if ! [[ "$GLOBAL_CORPSE_DECOMPOSITION_TIME_MULTIPLIER" =~ ^-?[0-9]+(\.[0-9]+)?$ ]]; then
+            echo "ERROR: The global corpse decomposition time multiplier must be a number."
+            exit 1
+        fi
+    fi
+
+    PVP_ZONE_STRUCTURE_DAMAGE_MULTIPLIER="${PVP_ZONE_STRUCTURE_DAMAGE_MULTIPLIER:-""}"
+    # validate that the value is a number
+    if [ -n "$PVP_ZONE_STRUCTURE_DAMAGE_MULTIPLIER" ]; then
+        if ! [[ "$PVP_ZONE_STRUCTURE_DAMAGE_MULTIPLIER" =~ ^-?[0-9]+(\.[0-9]+)?$ ]]; then
+            echo "ERROR: The PVP zone structure damage multiplier must be a number."
+            exit 1
+        fi
+    fi
+
+    CROP_GROWTH_SPEED_MULTIPLIER="${CROP_GROWTH_SPEED_MULTIPLIER:-""}"
+    # validate that the value is a number
+    if [ -n "$CROP_GROWTH_SPEED_MULTIPLIER" ]; then
+        if ! [[ "$CROP_GROWTH_SPEED_MULTIPLIER" =~ ^-?[0-9]+(\.[0-9]+)?$ ]]; then
+            echo "ERROR: The crop growth speed multiplier must be a number."
+            exit 1
+        fi
+    fi
+
+    LAY_EGG_INTERVAL_MULTIPLIER="${LAY_EGG_INTERVAL_MULTIPLIER:-""}"
+    # validate that the value is a number
+    if [ -n "$LAY_EGG_INTERVAL_MULTIPLIER" ]; then
+        if ! [[ "$LAY_EGG_INTERVAL_MULTIPLIER" =~ ^-?[0-9]+(\.[0-9]+)?$ ]]; then
+            echo "ERROR: The lay egg interval multiplier must be a number."
+            exit 1
+        fi
+    fi
+
+    POOP_INTERVAL_MULTIPLIER="${POOP_INTERVAL_MULTIPLIER:-""}"
+    # validate that the value is a number
+    if [ -n "$POOP_INTERVAL_MULTIPLIER" ]; then
+        if ! [[ "$POOP_INTERVAL_MULTIPLIER" =~ ^-?[0-9]+(\.[0-9]+)?$ ]]; then
+            echo "ERROR: The poop interval multiplier must be a number."
+            exit 1
+        fi
+    fi
+
+    EGG_HATCH_SPEED_MULTIPLIER="${EGG_HATCH_SPEED_MULTIPLIER:-""}"
+    # validate that the value is a number
+    if [ -n "$EGG_HATCH_SPEED_MULTIPLIER" ]; then
+        if ! [[ "$EGG_HATCH_SPEED_MULTIPLIER" =~ ^-?[0-9]+(\.[0-9]+)?$ ]]; then
+            echo "ERROR: The egg hatch speed multiplier must be a number."
+            exit 1
+        fi
+    fi
+
+    CROP_DECAY_SPEED_MULTIPLIER="${CROP_DECAY_SPEED_MULTIPLIER:-""}"
+    # validate that the value is a number
+    if [ -n "$CROP_DECAY_SPEED_MULTIPLIER" ]; then
+        if ! [[ "$CROP_DECAY_SPEED_MULTIPLIER" =~ ^-?[0-9]+(\.[0-9]+)?$ ]]; then
+            echo "ERROR: The crop decay speed multiplier must be a number."
+            exit 1
+        fi
+    fi
+
+    MATING_INTERVAL_MULTIPLIER="${MATING_INTERVAL_MULTIPLIER:-""}"
+    # validate that the value is a number
+    if [ -n "$MATING_INTERVAL_MULTIPLIER" ]; then
+        if ! [[ "$MATING_INTERVAL_MULTIPLIER" =~ ^-?[0-9]+(\.[0-9]+)?$ ]]; then
+            echo "ERROR: The mating interval multiplier must be a number."
+            exit 1
+        fi
+    fi
+
+    BABY_MATURE_SPEED_MULTIPLIER="${BABY_MATURE_SPEED_MULTIPLIER:-""}"
+    # validate that the value is a number
+    if [ -n "$BABY_MATURE_SPEED_MULTIPLIER" ]; then
+        if ! [[ "$BABY_MATURE_SPEED_MULTIPLIER" =~ ^-?[0-9]+(\.[0-9]+)?$ ]]; then
+            echo "ERROR: The baby mature speed multiplier must be a number."
+            exit 1
+        fi
+    fi
+
+    BABY_FOOD_CONSUMPTION_SPEED_MULTIPLIER="${BABY_FOOD_CONSUMPTION_SPEED_MULTIPLIER:-""}"
+    # validate that the value is a number
+    if [ -n "$BABY_FOOD_CONSUMPTION_SPEED_MULTIPLIER" ]; then
+        if ! [[ "$BABY_FOOD_CONSUMPTION_SPEED_MULTIPLIER" =~ ^-?[0-9]+(\.[0-9]+)?$ ]]; then
+            echo "ERROR: The baby food consumption speed multiplier must be a number."
+            exit 1
+        fi
+    fi
+
+    DINO_HARVESTING_DAMAGE_MULTIPLIER="${DINO_HARVESTING_DAMAGE_MULTIPLIER:-""}"
+    # validate that the value is a number
+    if [ -n "$DINO_HARVESTING_DAMAGE_MULTIPLIER" ]; then
+        if ! [[ "$DINO_HARVESTING_DAMAGE_MULTIPLIER" =~ ^-?[0-9]+(\.[0-9]+)?$ ]]; then
+            echo "ERROR: The dino harvesting damage multiplier must be a number."
+            exit 1
+        fi
+    fi
+
+    PLAYER_HARVESTING_DAMAGE_MULTIPLIER="${PLAYER_HARVESTING_DAMAGE_MULTIPLIER:-""}"
+    # validate that the value is a number
+    if [ -n "$PLAYER_HARVESTING_DAMAGE_MULTIPLIER" ]; then
+        if ! [[ "$PLAYER_HARVESTING_DAMAGE_MULTIPLIER" =~ ^-?[0-9]+(\.[0-9]+)?$ ]]; then
+            echo "ERROR: The player harvesting damage multiplier must be a number."
+            exit 1
+        fi
+    fi
+
+    KILL_XP_MULTIPLIER="${KILL_XP_MULTIPLIER:-""}"
+    # validate that the value is a number
+    if [ -n "$KILL_XP_MULTIPLIER" ]; then
+        if ! [[ "$KILL_XP_MULTIPLIER" =~ ^-?[0-9]+(\.[0-9]+)?$ ]]; then
+            echo "ERROR: The kill XP multiplier must be a number."
+            exit 1
+        fi
+    fi
+
+    HARVEST_XP_MULTIPLIER="${HARVEST_XP_MULTIPLIER:-""}"
+    # validate that the value is a number
+    if [ -n "$HARVEST_XP_MULTIPLIER" ]; then
+        if ! [[ "$HARVEST_XP_MULTIPLIER" =~ ^-?[0-9]+(\.[0-9]+)?$ ]]; then
+            echo "ERROR: The harvest XP multiplier must be a number."
+            exit 1
+        fi
+    fi
+
+    CRAFT_XP_MULTIPLIER="${CRAFT_XP_MULTIPLIER:-""}"
+    # validate that the value is a number
+    if [ -n "$CRAFT_XP_MULTIPLIER" ]; then
+        if ! [[ "$CRAFT_XP_MULTIPLIER" =~ ^-?[0-9]+(\.[0-9]+)?$ ]]; then
+            echo "ERROR: The craft XP multiplier must be a number."
+            exit 1
+        fi
+    fi
+
+    GENERIC_XP_MULTIPLIER="${GENERIC_XP_MULTIPLIER:-""}"
+    # validate that the value is a number
+    if [ -n "$GENERIC_XP_MULTIPLIER" ]; then
+        if ! [[ "$GENERIC_XP_MULTIPLIER" =~ ^-?[0-9]+(\.[0-9]+)?$ ]]; then
+            echo "ERROR: The generic XP multiplier must be a number."
+            exit 1
+        fi
+    fi
+
+    SPECIAL_XP_MULTIPLIER="${SPECIAL_XP_MULTIPLIER:-""}"
+    # validate that the value is a number
+    if [ -n "$SPECIAL_XP_MULTIPLIER" ]; then
+        if ! [[ "$SPECIAL_XP_MULTIPLIER" =~ ^-?[0-9]+(\.[0-9]+)?$ ]]; then
+            echo "ERROR: The special XP multiplier must be a number."
             exit 1
         fi
     fi
@@ -239,62 +655,119 @@ initialize_variables() {
 }
 
 
-update_game_user_settings() {
-  local ini_file="$ASA_DIR/Saved/Config/WindowsServer/GameUserSettings.ini"
+update_ini_settings() {
+  local gus_ini="$ASA_DIR/Saved/Config/WindowsServer/GameUserSettings.ini"
+  local game_ini="$ASA_DIR/Saved/Config/WindowsServer/Game.ini"
 
   # [ServerSettings]
-  update_game_user_setting "$ini_file" "ServerSettings" "ServerAdminPassword" "$SERVER_ADMIN_PASSWORD"
-  update_game_user_setting "$ini_file" "ServerSettings" "ServerPassword" "$SERVER_PASSWORD"
-  update_game_user_setting "$ini_file" "ServerSettings" "DifficultyOffset" "$DIFFICULTY_OFFSET"
-  update_game_user_setting "$ini_file" "ServerSettings" "serverPVE" "$ENABLE_PVE"
-  update_game_user_setting "$ini_file" "ServerSettings" "DinoDamageMultiplier" "$DINO_DAMAGE_MULTIPLIER"
-  update_game_user_setting "$ini_file" "ServerSettings" "XPMultiplier" "$XP_MULTIPLIER"
-  update_game_user_setting "$ini_file" "ServerSettings" "TamingSpeedMultiplier" "$TAMING_SPEED_MULTIPLIER"
-  update_game_user_setting "$ini_file" "ServerSettings" "HarvestAmountMultiplier" "$HARVEST_AMOUNT_MULTIPLIER"
-  update_game_user_setting "$ini_file" "ServerSettings" "StructureResistanceMultiplier" "$STRUCTURE_RESISTANCE_MULTIPLIER"
-  update_game_user_setting "$ini_file" "ServerSettings" "MaxTamedDinos" "$MAX_TAMED_DINOS"
-  update_game_user_setting "$ini_file" "ServerSettings" "RCONPort" "$RCON_PORT"
-  update_game_user_setting "$ini_file" "ServerSettings" "RCONEnabled" "$RCON_ENABLED"
-  update_game_user_setting_quote "$ini_file" "ServerSettings" "AllowedCheatersURL" "$ALLOW_CHEATERS_URL"
-  update_game_user_setting "$ini_file" "ServerSettings" "AllowedCheatersUpdateInterval" "$ALLOW_CHEATERS_UPDATE_INTERVAL"
-  update_game_user_setting_quote "$ini_file" "ServerSettings" "BanListURL" "$BAN_LIST_URL"
-  update_game_user_setting "$ini_file" "ServerSettings" "AllowThirdPersonPlayer" "$ALLOW_THIRD_PERSON_VIEW"
-  update_game_user_setting "$ini_file" "ServerSettings" "UseExclusiveList" "$USE_EXCLUSIVE_LIST"
-  update_game_user_setting "$ini_file" "ServerSettings" "OxygenSwimSpeedStatMultiplier" "$OXYGEN_SWIM_SPEED_STAT_MULTIPLIER"
-  update_game_user_setting "$ini_file" "ServerSettings" "ShowMapPlayerLocation" "$SHOW_MAP_PLAYER_LOCATION"
-  update_game_user_setting "$ini_file" "ServerSettings" "ServerCrosshair" "$SERVER_CROSSHAIR"
-  update_game_user_setting "$ini_file" "ServerSettings" "TheMaxStructuresInRange" "$MAX_STRUCTURES_IN_RANGE"
-  update_game_user_setting "$ini_file" "ServerSettings" "StartTimeHour" "$START_TIME_HOUR"
-  update_game_user_setting "$ini_file" "ServerSettings" "OverrideOfficialDifficulty" "$OVERRIDE_OFFICIAL_DIFFICULTY"
-  update_game_user_setting "$ini_file" "ServerSettings" "ServerAutoForceRespawnWildDinosInterval" "$SERVER_AUTO_FORCE_RESPAWN_WILD_DINOS_INTERVAL"
+  update_ini_setting "$gus_ini" "ServerSettings" "ServerAdminPassword" "$SERVER_ADMIN_PASSWORD"
+  update_ini_setting "$gus_ini" "ServerSettings" "ServerPassword" "$SERVER_PASSWORD"
+  update_ini_setting "$gus_ini" "ServerSettings" "DifficultyOffset" "$DIFFICULTY_OFFSET"
+  update_ini_setting "$gus_ini" "ServerSettings" "serverPVE" "$ENABLE_PVE"
+  update_ini_setting "$gus_ini" "ServerSettings" "DinoDamageMultiplier" "$DINO_DAMAGE_MULTIPLIER"
+  update_ini_setting "$gus_ini" "ServerSettings" "XPMultiplier" "$XP_MULTIPLIER"
+  update_ini_setting "$gus_ini" "ServerSettings" "TamingSpeedMultiplier" "$TAMING_SPEED_MULTIPLIER"
+  update_ini_setting "$gus_ini" "ServerSettings" "HarvestAmountMultiplier" "$HARVEST_AMOUNT_MULTIPLIER"
+  update_ini_setting "$gus_ini" "ServerSettings" "StructureResistanceMultiplier" "$STRUCTURE_RESISTANCE_MULTIPLIER"
+  update_ini_setting "$gus_ini" "ServerSettings" "MaxTamedDinos" "$MAX_TAMED_DINOS"
+  update_ini_setting "$gus_ini" "ServerSettings" "RCONPort" "$RCON_PORT"
+  update_ini_setting "$gus_ini" "ServerSettings" "RCONEnabled" "$RCON_ENABLED"
+  update_ini_setting_quote "$gus_ini" "ServerSettings" "AllowedCheatersURL" "$ALLOW_CHEATERS_URL"
+  update_ini_setting "$gus_ini" "ServerSettings" "AllowedCheatersUpdateInterval" "$ALLOW_CHEATERS_UPDATE_INTERVAL"
+  update_ini_setting_quote "$gus_ini" "ServerSettings" "BanListURL" "$BAN_LIST_URL"
+  update_ini_setting "$gus_ini" "ServerSettings" "AllowThirdPersonPlayer" "$ALLOW_THIRD_PERSON_VIEW"
+  update_ini_setting "$gus_ini" "ServerSettings" "UseExclusiveList" "$USE_EXCLUSIVE_LIST"
+  update_ini_setting "$gus_ini" "ServerSettings" "OxygenSwimSpeedStatMultiplier" "$OXYGEN_SWIM_SPEED_STAT_MULTIPLIER"
+  update_ini_setting "$gus_ini" "ServerSettings" "ShowMapPlayerLocation" "$SHOW_MAP_PLAYER_LOCATION"
+  update_ini_setting "$gus_ini" "ServerSettings" "ServerCrosshair" "$SERVER_CROSSHAIR"
+  update_ini_setting "$gus_ini" "ServerSettings" "TheMaxStructuresInRange" "$MAX_STRUCTURES_IN_RANGE"
+  update_ini_setting "$gus_ini" "ServerSettings" "StartTimeHour" "$START_TIME_HOUR"
+  update_ini_setting "$gus_ini" "ServerSettings" "OverrideOfficialDifficulty" "$OVERRIDE_OFFICIAL_DIFFICULTY"
+  update_ini_setting "$gus_ini" "ServerSettings" "ServerAutoForceRespawnWildDinosInterval" "$SERVER_AUTO_FORCE_RESPAWN_WILD_DINOS_INTERVAL"
+  update_ini_setting "$gus_ini" "ServerSettings" "StructurePreventResourceRadiusMultiplier" "$STRUCTURE_PREVENT_RESOURCE_RADIUS_MULTIPLIER"
+  update_ini_setting "$gus_ini" "ServerSettings" "TribeNameChangeCooldown" "$TRIBE_NAME_CHANGE_COOLDOWN"
+  update_ini_setting "$gus_ini" "ServerSettings" "PlatformSaddleBuildAreaBoundsMultiplier" "$PLATFORM_SADDLE_BUILD_AREA_BOUNDS_MULTIPLIER"
+  update_ini_setting "$gus_ini" "ServerSettings" "AlwaysAllowStructurePickup" "$ALWAYS_ALLOW_STRUCTURE_PICKUP"
+  update_ini_setting "$gus_ini" "ServerSettings" "StructurePickupTimeAfterPlacement" "$STRUCTURE_PICKUP_TIME_AFTER_PLACEMENT"
+  update_ini_setting "$gus_ini" "ServerSettings" "StructurePickupHoldDuration" "$STRUCTURE_PICKUP_HOLD_DURATION"
+  update_ini_setting "$gus_ini" "ServerSettings" "AllowHideDamageSourceFromLogs" "$ALLOW_HIDE_DAMAGE_SOURCE_FROM_LOGS"
+  update_ini_setting "$gus_ini" "ServerSettings" "DisableDinoDecayPvE" "$DISABLE_DINO_DECAY_PVE"
+  update_ini_setting "$gus_ini" "ServerSettings" "PvEDinoDecayPeriodMultiplier" "$PVE_DINO_DECAY_PERIOD_MULTIPLIER"
+  update_ini_setting "$gus_ini" "ServerSettings" "PvEStructureDecayPeriodMultiplier" "$PVE_STRUCTURE_DECAY_PERIOD_MULTIPLIER"
+  update_ini_setting "$gus_ini" "ServerSettings" "KickIdlePlayersPeriod" "$KICK_IDLE_PLAYERS_PERIOD"
+  update_ini_setting "$gus_ini" "ServerSettings" "PerPlatformMaxStructuresMultiplier" "$PER_PLATFORM_MAX_STRUCTURES_MULTIPLIER"
+  update_ini_setting "$gus_ini" "ServerSettings" "RaidDinoCharacterFoodDrainMultiplier" "$RAID_DINO_CHARACTER_FOOD_DRAIN_MULTIPLIER"
+  update_ini_setting "$gus_ini" "ServerSettings" "ItemStackSizeMultiplier" "$ITEM_STACK_SIZE_MULTIPLIER"
+  update_ini_setting "$gus_ini" "ServerSettings" "AutoSavePeriodMinutes" "$AUTO_SAVE_PERIOD_MINUTES"
+  update_ini_setting "$gus_ini" "ServerSettings" "RCONServerGameLogBuffer" "$RCON_SERVER_GAME_LOG_BUFFER"
+  update_ini_setting "$gus_ini" "ServerSettings" "ImplantSuicideCD" "$IMPLANT_SUICIDE_CD"
+  update_ini_setting "$gus_ini" "ServerSettings" "AllowHitMarkers" "$ALLOW_HITMARKERS"
+  update_ini_setting "$gus_ini" "ServerSettings" "AllowCrateSpawnsOnTopOfStructures" "$ALLOW_CRATE_SPAWNS_ON_TOP_OF_STRUCTURES"
+  update_ini_setting "$gus_ini" "ServerSettings" "AllowFlyerCarryPvE" "$ALLOW_FLYER_CARRY_PVE"
 
   # [SessionSettings]
-  update_game_user_setting "$ini_file" "SessionSettings" "SessionName" "$SESSION_NAME"
-  update_game_user_setting "$ini_file" "SessionSettings" "QueryPort" "$QUERY_PORT"
+  update_ini_setting "$gus_ini" "SessionSettings" "SessionName" "$SESSION_NAME"
+  update_ini_setting "$gus_ini" "SessionSettings" "QueryPort" "$QUERY_PORT"
 
   # [/Script/Engine.GameSession]
-  update_game_user_setting "$ini_file" "/Script/Engine.GameSession" "MaxPlayers" "$MAX_PLAYERS"
+  update_ini_setting "$gus_ini" "/Script/Engine.GameSession" "MaxPlayers" "$MAX_PLAYERS"
+
+  # [/Script/ShooterGame.ShooterGameUserSettings]
+  update_ini_setting "$gus_ini" "/Script/ShooterGame.ShooterGameUserSettings" "PreventDownloadSurvivors" "$PREVENT_DOWNLOAD_SURVIVORS"
+  update_ini_setting "$gus_ini" "/Script/ShooterGame.ShooterGameUserSettings" "PreventDownloadItems" "$PREVENT_DOWNLOAD_ITEMS"
+  update_ini_setting "$gus_ini" "/Script/ShooterGame.ShooterGameUserSettings" "PreventDownloadDinos" "$PREVENT_DOWNLOAD_DINOS"
+  update_ini_setting "$gus_ini" "/Script/ShooterGame.ShooterGameUserSettings" "PreventDownloadSurvivors" "$PREVENT_UPLOAD_SURVIVORS"
+  update_ini_setting "$gus_ini" "/Script/ShooterGame.ShooterGameUserSettings" "PreventUploadItems" "$PREVENT_UPLOAD_ITEMS"
+  update_ini_setting "$gus_ini" "/Script/ShooterGame.ShooterGameUserSettings" "PreventUploadDinos" "$PREVENT_UPLOAD_DINOS"
+
 
   # Check if the file exists
-  if [ -f "$ini_file" ]; then
+  if [ -f "$gus_ini" ]; then
     # Remove existing [MessageOfTheDay] section
-    sed -i '/^\[MessageOfTheDay\]/,/^$/d' "$ini_file"
+    sed -i '/^\[MessageOfTheDay\]/,/^$/d' "$gus_ini"
     # Prepare MOTD by escaping newline characters
     local escaped_motd=$(echo "$MOTD" | sed 's/\\n/\\\\n/g')
     # Handle MOTD based on ENABLE_MOTD value
     if [ "${ENABLE_MOTD,,}" = "true" ]; then
-      update_game_user_setting "$ini_file" "MessageOfTheDay" "Message" "$escaped_motd"
-      update_game_user_setting "$ini_file" "MessageOfTheDay" "Duration" "$MOTD_DURATION"
+      update_ini_setting "$gus_ini" "MessageOfTheDay" "Message" "$escaped_motd"
+      update_ini_setting "$gus_ini" "MessageOfTheDay" "Duration" "$MOTD_DURATION"
     else
-      update_game_user_setting "$ini_file" "MessageOfTheDay" "Message" ""
-      update_game_user_setting "$ini_file" "MessageOfTheDay" "Duration" ""
+      update_ini_setting "$gus_ini" "MessageOfTheDay" "Message" ""
+      update_ini_setting "$gus_ini" "MessageOfTheDay" "Duration" ""
     fi
   else
-    echo "$ini_file not found."
+    echo "$gus_ini not found."
   fi
+
+
+  # [/Script/ShooterGame.ShooterGameMode]
+  update_ini_setting "$game_ini" "/Script/ShooterGame.ShooterGameMode" "BabyImprintingStatScaleMultiplier" "$BABY_IMPRINTING_STAT_SCALE_MULTIPLIER"
+  update_ini_setting "$game_ini" "/Script/ShooterGame.ShooterGameMode" "BabyCuddleIntervalMultiplier" "$BABY_CUDDLE_INTERVAL_MULTIPLIER"
+  update_ini_setting "$game_ini" "/Script/ShooterGame.ShooterGameMode" "BabyCuddleGracePeriodMultiplier" "$BABY_CUDDLE_GRACE_PERIOD_MULTIPLIER"
+  update_ini_setting "$game_ini" "/Script/ShooterGame.ShooterGameMode" "BabyCuddleLoseImprintQualitySpeedMultiplier" "$BABY_CUDDLE_LOSE_IMPRINT_QUALITY_SPEED_MULTIPLIER"
+  update_ini_setting "$game_ini" "/Script/ShooterGame.ShooterGameMode" "GlobalSpoilingTimeMultiplier" "$GLOBAL_SPOILING_TIME_MULTIPLIER"
+  update_ini_setting "$game_ini" "/Script/ShooterGame.ShooterGameMode" "GlobalItemDecompositionTimeMultiplier" "$GLOBAL_ITEM_DECOMPOSITION_TIME_MULTIPLIER"
+  update_ini_setting "$game_ini" "/Script/ShooterGame.ShooterGameMode" "GlobalCorpseDecompositionTimeMultiplier" "$GLOBAL_CORPSE_DECOMPOSITION_TIME_MULTIPLIER"
+  update_ini_setting "$game_ini" "/Script/ShooterGame.ShooterGameMode" "PvPZoneStructureDamageMultiplier" "$PVP_ZONE_STRUCTURE_DAMAGE_MULTIPLIER"
+  update_ini_setting "$game_ini" "/Script/ShooterGame.ShooterGameMode" "CropGrowthSpeedMultiplier" "$CROP_GROWTH_SPEED_MULTIPLIER"
+  update_ini_setting "$game_ini" "/Script/ShooterGame.ShooterGameMode" "LayEggIntervalMultiplier" "$LAY_EGG_INTERVAL_MULTIPLIER"
+  update_ini_setting "$game_ini" "/Script/ShooterGame.ShooterGameMode" "PoopIntervalMultiplier" "$POOP_INTERVAL_MULTIPLIER"
+  update_ini_setting "$game_ini" "/Script/ShooterGame.ShooterGameMode" "EggHatchSpeedMultiplier" "$EGG_HATCH_SPEED_MULTIPLIER"
+  update_ini_setting "$game_ini" "/Script/ShooterGame.ShooterGameMode" "CropDecaySpeedMultiplier" "$CROP_DECAY_SPEED_MULTIPLIER"
+  update_ini_setting "$game_ini" "/Script/ShooterGame.ShooterGameMode" "MatingIntervalMultiplier" "$MATING_INTERVAL_MULTIPLIER"
+  update_ini_setting "$game_ini" "/Script/ShooterGame.ShooterGameMode" "BabyMatureSpeedMultiplier" "$BABY_MATURE_SPEED_MULTIPLIER"
+  update_ini_setting "$game_ini" "/Script/ShooterGame.ShooterGameMode" "BabyFoodConsumptionSpeedMultiplier" "$BABY_FOOD_CONSUMPTION_SPEED_MULTIPLIER"
+  update_ini_setting "$game_ini" "/Script/ShooterGame.ShooterGameMode" "DinoHarvestingDamageMultiplier" "$DINO_HARVESTING_DAMAGE_MULTIPLIER"
+  update_ini_setting "$game_ini" "/Script/ShooterGame.ShooterGameMode" "PlayerHarvestingDamageMultiplier" "$PLAYER_HARVESTING_DAMAGE_MULTIPLIER"
+  update_ini_setting "$game_ini" "/Script/ShooterGame.ShooterGameMode" "KillXPMultiplier" "$KILL_XP_MULTIPLIER"
+  update_ini_setting "$game_ini" "/Script/ShooterGame.ShooterGameMode" "HarvestXPMultiplier" "$HARVEST_XP_MULTIPLIER"
+  update_ini_setting "$game_ini" "/Script/ShooterGame.ShooterGameMode" "CraftXPMultiplier" "$CRAFT_XP_MULTIPLIER"
+  update_ini_setting "$game_ini" "/Script/ShooterGame.ShooterGameMode" "GenericXPMultiplier" "$GENERIC_XP_MULTIPLIER"
+  update_ini_setting "$game_ini" "/Script/ShooterGame.ShooterGameMode" "SpecialXPMultiplier" "$SPECIAL_XP_MULTIPLIER"
+
 }
 
-update_game_user_setting_quote() {
+update_ini_setting_quote() {
     local ini_file="$1"
     local section="$2"
     local setting="$3"
@@ -313,7 +786,7 @@ update_game_user_setting_quote() {
 }
 
 
-update_game_user_setting() {
+update_ini_setting() {
     local ini_file="$1"
     local section="$2"
     local setting="$3"
@@ -565,7 +1038,7 @@ main() {
     update_server
     determine_map_path
     cluster_dir
-    update_game_user_settings
+    update_ini_settings
     start_server
 }
 
