@@ -51,7 +51,7 @@ initialize_variables() {
     fi
 
     # Set the session name
-    SESSION_NAME="${SESSION_NAME:-ASA Server}"
+    SESSION_NAME="${SESSION_NAME:-"ASA Server"}"
 
     QUERY_PORT="${QUERY_PORT:-27015}"
     ASA_PORT="${ASA_PORT:-7777}"
@@ -60,13 +60,13 @@ initialize_variables() {
     # set RCON_ENABLED to false if not set
     if [ "${RCON_ENABLED,,}" = "true" ]; then
         RCON_ENABLED="True"
-    else
+    elif [ "${RCON_ENABLED,,}" = "false" ]; then
         RCON_ENABLED="False"
     fi
     RCON_PORT="${RCON_PORT:-27020}"
 
 
-    DIFFICULTY_OFFSET="${DIFFICULTY_OFFSET:-"1.286000"}"
+    DIFFICULTY_OFFSET="${DIFFICULTY_OFFSET:-""}"
     # validate that difficulty offset is a number between 0.01 and 1.0
     if [ -n "$DIFFICULTY_OFFSET" ]; then
         if ! [[ "$DIFFICULTY_OFFSET" =~ ^[0-9]+(\.[0-9]+)?$ ]]; then
@@ -78,14 +78,63 @@ initialize_variables() {
         fi
     fi
 
+    OVERRIDE_OFFICIAL_DIFFICULTY="${OVERRIDE_OFFICIAL_DIFFICULTY:-""}"
+    # validate that override official difficulty is a number
+    if [ -n "$OVERRIDE_OFFICIAL_DIFFICULTY" ]; then
+        if ! [[ "$OVERRIDE_OFFICIAL_DIFFICULTY" =~ ^-?[0-9]+(\.[0-9]+)?$ ]]; then
+            echo "ERROR: The override official difficulty must be a number."
+            exit 1
+        fi
+    fi
+
+    SERVER_AUTO_FORCE_RESPAWN_WILD_DINOS_INTERVAL="${SERVER_AUTO_FORCE_RESPAWN_WILD_DINOS_INTERVAL:-""}"
+    # validate that the value is a number
+    if [ -n "$SERVER_AUTO_FORCE_RESPAWN_WILD_DINOS_INTERVAL" ]; then
+        if ! [[ "$SERVER_AUTO_FORCE_RESPAWN_WILD_DINOS_INTERVAL" =~ ^-?[0-9]+(\.[0-9]+)?$ ]]; then
+            echo "ERROR: The server auto force respawn wild dinos interval must be a number in seconds."
+            exit 1
+        fi
+    fi
+
     # set PVE to false if not set
     ENABLE_PVP="${ENABLE_PVP:-"TRUE"}"
     if [ "${ENABLE_PVP,,}" = "true" ]; then
         ENABLE_PVE="False"
-    else
+    elif [ "${ENABLE_PVP,,}" = "false" ]; then
         ENABLE_PVE="True"
     fi
 
+    SHOW_MAP_PLAYER_LOCATION="${SHOW_MAP_PLAYER_LOCATION:-"TRUE"}"
+    if [ "${SHOW_MAP_PLAYER_LOCATION,,}" = "true" ]; then
+        SHOW_MAP_PLAYER_LOCATION="True"
+    elif [ "${SHOW_MAP_PLAYER_LOCATION,,}" = "false" ]; then
+        SHOW_MAP_PLAYER_LOCATION="False"
+    fi
+
+    SERVER_CROSSHAIR="${SERVER_CROSSHAIR:-""}"
+    if [ "${SERVER_CROSSHAIR,,}" = "true" ]; then
+        SERVER_CROSSHAIR="True"
+    elif [ "${SERVER_CROSSHAIR,,}" = "false" ]; then
+        SERVER_CROSSHAIR="False"
+    fi
+
+    MAX_STRUCTURES_IN_RANGE="${MAX_STRUCTURES_IN_RANGE:-""}"
+    # validate that the value is a number
+    if [ -n "$MAX_STRUCTURES_IN_RANGE" ]; then
+        if ! [[ "$MAX_STRUCTURES_IN_RANGE" =~ ^[0-9]+$ ]]; then
+            echo "ERROR: The max structures in range must be a number."
+            exit 1
+        fi
+    fi
+
+    START_TIME_HOUR="${START_TIME_HOUR:-"-1"}"
+    # validate that the value is a number
+    if [ -n "$START_TIME_HOUR" ]; then
+        if ! [[ "$START_TIME_HOUR" =~ ^[0-9]+$ ]]; then
+            echo "ERROR: The start time hour must be a number."
+            exit 1
+        fi
+    fi
 
     DINO_DAMAGE_MULTIPLIER="${DINO_DAMAGE_MULTIPLIER:-""}"
     # validate that the value is a number
@@ -128,6 +177,15 @@ initialize_variables() {
     if [ -n "$STRUCTURE_RESISTANCE_MULTIPLIER" ]; then
         if ! [[ "$STRUCTURE_RESISTANCE_MULTIPLIER" =~ ^-?[0-9]+(\.[0-9]+)?$ ]]; then
             echo "ERROR: The structure resistance multiplier must be a number."
+            exit 1
+        fi
+    fi
+
+    OXYGEN_SWIM_SPEED_STAT_MULTIPLIER="${OXYGEN_SWIM_SPEED_STAT_MULTIPLIER:-"1"}"
+    # validate that the value is a number
+    if [ -n "$OXYGEN_SWIM_SPEED_STAT_MULTIPLIER" ]; then
+        if ! [[ "$OXYGEN_SWIM_SPEED_STAT_MULTIPLIER" =~ ^-?[0-9]+(\.[0-9]+)?$ ]]; then
+            echo "ERROR: The oxygen swim speed stat multiplier must be a number."
             exit 1
         fi
     fi
@@ -197,11 +255,18 @@ update_game_user_settings() {
   update_game_user_setting "$ini_file" "ServerSettings" "MaxTamedDinos" "$MAX_TAMED_DINOS"
   update_game_user_setting "$ini_file" "ServerSettings" "RCONPort" "$RCON_PORT"
   update_game_user_setting "$ini_file" "ServerSettings" "RCONEnabled" "$RCON_ENABLED"
-  update_game_user_setting "$ini_file" "ServerSettings" "AllowedCheatersURL" "$ALLOW_CHEATERS_URL"
+  update_game_user_setting_quote "$ini_file" "ServerSettings" "AllowedCheatersURL" "$ALLOW_CHEATERS_URL"
   update_game_user_setting "$ini_file" "ServerSettings" "AllowedCheatersUpdateInterval" "$ALLOW_CHEATERS_UPDATE_INTERVAL"
-  update_game_user_setting "$ini_file" "ServerSettings" "BanListURL" "$BAN_LIST_URL"
+  update_game_user_setting_quote "$ini_file" "ServerSettings" "BanListURL" "$BAN_LIST_URL"
   update_game_user_setting "$ini_file" "ServerSettings" "AllowThirdPersonPlayer" "$ALLOW_THIRD_PERSON_VIEW"
   update_game_user_setting "$ini_file" "ServerSettings" "UseExclusiveList" "$USE_EXCLUSIVE_LIST"
+  update_game_user_setting "$ini_file" "ServerSettings" "OxygenSwimSpeedStatMultiplier" "$OXYGEN_SWIM_SPEED_STAT_MULTIPLIER"
+  update_game_user_setting "$ini_file" "ServerSettings" "ShowMapPlayerLocation" "$SHOW_MAP_PLAYER_LOCATION"
+  update_game_user_setting "$ini_file" "ServerSettings" "ServerCrosshair" "$SERVER_CROSSHAIR"
+  update_game_user_setting "$ini_file" "ServerSettings" "TheMaxStructuresInRange" "$MAX_STRUCTURES_IN_RANGE"
+  update_game_user_setting "$ini_file" "ServerSettings" "StartTimeHour" "$START_TIME_HOUR"
+  update_game_user_setting "$ini_file" "ServerSettings" "OverrideOfficialDifficulty" "$OVERRIDE_OFFICIAL_DIFFICULTY"
+  update_game_user_setting "$ini_file" "ServerSettings" "ServerAutoForceRespawnWildDinosInterval" "$SERVER_AUTO_FORCE_RESPAWN_WILD_DINOS_INTERVAL"
 
   # [SessionSettings]
   update_game_user_setting "$ini_file" "SessionSettings" "SessionName" "$SESSION_NAME"
@@ -224,19 +289,27 @@ update_game_user_settings() {
       update_game_user_setting "$ini_file" "MessageOfTheDay" "Message" ""
       update_game_user_setting "$ini_file" "MessageOfTheDay" "Duration" ""
     fi
-
-
-    # FIX for Urls that need to be surrounded by quotes since ini-file wont do it
-    if [ -n "$ALLOW_CHEATERS_URL" ]; then
-      sed -i "s<AllowedCheatersURL=.*<AllowedCheatersURL=\"${ALLOW_CHEATERS_URL}\"<g" "$ini_file"
-    fi
-    if [ -n "$BAN_LIST_URL" ]; then
-      sed -i "s<BanListURL=.*<BanListURL=\"${BAN_LIST_URL}\"<g" "$ini_file"
-    fi
-
   else
     echo "$ini_file not found."
   fi
+}
+
+update_game_user_setting_quote() {
+    local ini_file="$1"
+    local section="$2"
+    local setting="$3"
+    local value="$4"
+
+    # Check if the file exists
+    if [ -f "$ini_file" ]; then
+      if [ -n "$value" ]; then
+        echo "Updating [$section] $setting=\"$value\" in $ini_file"
+        ini-file set --section "$section" --key "$setting" --value "$value" "$ini_file"
+        echo "Quoting [$section] $setting=\"$value\" in $ini_file"
+        sed -i "s<${setting}=.*<${setting}=\"${value}\"<g" "$ini_file"
+    else
+      echo "$ini_file not found."
+    fi
 }
 
 
@@ -251,10 +324,6 @@ update_game_user_setting() {
       if [ -n "$value" ]; then
         echo "Updating [$section] $setting=$value in $ini_file"
         ini-file set --section "$section" --key "$setting" --value "$value" "$ini_file"
-      else
-        echo "Removing [$section] $setting from $ini_file"
-        # Remove the setting line if value is not set
-        ini-file del --section "$section" --key "$setting" "$ini_file"
       fi
     else
       echo "$ini_file not found."
@@ -402,10 +471,7 @@ start_server() {
     # Initialize the mods argument to an empty string
     local mods_arg=""
     local battleye_arg=""
-    local rcon_args=""
     local custom_args=""
-    local server_password_arg=""
-    local session_name_arg="SessionName=\"${SESSION_NAME}\""
 
     # Check if MOD_IDS is set and not empty
     if [ -n "$MOD_IDS" ]; then
@@ -419,13 +485,6 @@ start_server() {
       echo "WARNING: BattlEye is disabled."
       battleye_arg="-NoBattlEye"
     fi
-
-    # Set RCON arguments based on RCON_ENABLED environment variable
-    # if [ "$RCON_ENABLED" = "TRUE" ]; then
-    #     rcon_args="?RCONEnabled=True?RCONPort=${RCON_PORT}"
-    # elif [ "$RCON_ENABLED" = "FALSE" ]; then
-    #     rcon_args="?RCONEnabled=False"
-    # fi
 
     if [ -n "$CUSTOM_SERVER_ARGS" ]; then
       custom_args="$CUSTOM_SERVER_ARGS"
@@ -450,7 +509,7 @@ start_server() {
 
     # Start the server with conditional arguments
     sudo -u games wine "$ASA_DIR/Binaries/Win64/ArkAscendedServer.exe" \
-        $MAP_PATH?listen?$session_name_arg?Port=${ASA_PORT}${rcon_args}${server_password_arg}?ServerAdminPassword=${SERVER_ADMIN_PASSWORD} \
+        $MAP_PATH?listen?$session_name_arg?Port=${ASA_PORT} \
         -WinLiveMaxPlayers=${MAX_PLAYERS} -clusterid=${CLUSTER_ID} -ClusterDirOverride=$CLUSTER_DIR_OVERRIDE \
         -servergamelog -servergamelogincludetribelogs -ServerRCONOutputTribeLogs -NotifyAdminCommandsInChat -nosteamclient $custom_args \
         $mods_arg $battleye_arg 2>/dev/null &
