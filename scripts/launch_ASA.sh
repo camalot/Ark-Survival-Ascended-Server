@@ -594,6 +594,7 @@ start_server() {
     fi
     echo "Creating cron job to pull whitelist every $WHITELIST_PULL_INTERVAL minutes..."
     (crontab -l 2>/dev/null; echo "*/$WHITELIST_PULL_INTERVAL * * * * /usr/games/scripts/pull_whitelist.sh") | crontab -
+    sh /usr/games/scripts/pull_whitelist.sh
   else
     # remove the crontab job if it exists
     echo "Removing whitelist cron job..."
@@ -612,6 +613,7 @@ start_server() {
     fi
     echo "Creating cron job to pull no check list every $NO_CHECK_LIST_PULL_INTERVAL minutes..."
     (crontab -l 2>/dev/null; echo "*/$NO_CHECK_LIST_PULL_INTERVAL * * * * /usr/games/scripts/pull_no_check_list.sh") | crontab -
+    sh /usr/games/scripts/pull_no_check_list.sh
   else
     # remove the crontab job if it exists
     echo "Removing no check list cron job..."
