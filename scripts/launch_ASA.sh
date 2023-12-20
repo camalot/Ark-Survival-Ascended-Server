@@ -783,6 +783,7 @@ update_ini_setting_quote() {
     else
       echo "$ini_file not found."
     fi
+  fi
 }
 
 
