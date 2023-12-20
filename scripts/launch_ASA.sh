@@ -282,10 +282,10 @@ initialize_variables() {
         fi
     fi
 
-    START_TIME_HOUR="${START_TIME_HOUR:-"-1"}"
+    START_TIME_HOUR="${START_TIME_HOUR:-""}"
     # validate that the value is a number
     if [ -n "$START_TIME_HOUR" ]; then
-        if ! [[ "$START_TIME_HOUR" =~ ^[0-9]+$ ]]; then
+        if ! [[ "$START_TIME_HOUR" =~ ^-?[0-9]+$ ]]; then
             echo "ERROR: The start time hour must be a number."
             exit 1
         fi
