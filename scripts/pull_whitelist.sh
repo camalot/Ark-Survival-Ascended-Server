@@ -16,4 +16,7 @@ if [ ! -f "$WHITELIST_FILE" ]; then
 fi
 
 # curl url and save to file
+echo "Downloading whitelist from $WHITELIST_URL"
 curl -s -o "$WHITELIST_FILE" "$WHITELIST_URL" || exit 1
+echo "Whitelist downloaded successfully"
+cat "$WHITELIST_FILE"

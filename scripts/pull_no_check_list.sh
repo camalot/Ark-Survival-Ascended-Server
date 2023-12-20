@@ -16,4 +16,7 @@ if [ ! -f "$NO_CHECK_LIST_FILE" ]; then
 fi
 
 # curl url and save to file
+echo "Downloading no check list from $NO_CHECK_LIST_URL"
 curl -s -o "$NO_CHECK_LIST_FILE" "$NO_CHECK_LIST_URL" || exit 1
+echo "No check list downloaded successfully"
+cat "$NO_CHECK_LIST_FILE"
