@@ -29,7 +29,7 @@ initialize_variables() {
     # Set server admin password from password file if set
     SERVER_ADMIN_PASSWORD_FILE="${SERVER_ADMIN_PASSWORD_FILE:-""}"
     if [ -f "$SERVER_ADMIN_PASSWORD_FILE" ]; then
-        SERVER_ADMIN_PASSWORD=$(cat "$SERVER_ADMIN_PASSWORD_FILE")
+      SERVER_ADMIN_PASSWORD=$(cat "$SERVER_ADMIN_PASSWORD_FILE")
     fi
 
     # Set server admin password from environment variable if set
@@ -38,620 +38,224 @@ initialize_variables() {
 
     # if the password is not set, generate a random one
     if [ -z "$SERVER_ADMIN_PASSWORD" ]; then
-        SERVER_ADMIN_PASSWORD=$(tr -dc 'a-zA-Z0-9' < /dev/urandom | fold -w 20 | head -n 1)
-        echo "Generated server admin password: $ASA_SERVER_ADMIN_PASSWORD"
+      SERVER_ADMIN_PASSWORD=$(tr -dc 'a-zA-Z0-9' < /dev/urandom | fold -w 20 | head -n 1)
+      echo "Generated server admin password: $ASA_SERVER_ADMIN_PASSWORD"
     fi
 
     # Set Server password from password file if set
     SERVER_PASSWORD_FILE="${SERVER_PASSWORD_FILE:-""}"
     if [ -f "$SERVER_PASSWORD_FILE" ]; then
-        SERVER_PASSWORD=$(cat "$SERVER_PASSWORD_FILE")
+      SERVER_PASSWORD=$(cat "$SERVER_PASSWORD_FILE")
     fi
     # Set Server password from environment variable if set
     # this will take precedence over the password file
     SERVER_PASSWORD="${SERVER_PASSWORD:-""}"
     # validate the password if it's set
     if [ -n "$SERVER_PASSWORD" ]; then
-        if ! [[ "$SERVER_PASSWORD" =~ ^[a-zA-Z0-9]+$ ]]; then
-            echo "ERROR: The server password must contain only numbers or characters."
-            exit 1
-        fi
+      if ! [[ "$SERVER_PASSWORD" =~ ^[a-zA-Z0-9]+$ ]]; then
+        echo "ERROR: The server password must contain only numbers or characters."
+        exit 1
+      fi
     fi
 
     # Set the session name
     SESSION_NAME="${SESSION_NAME:-"ASA Server"}"
 
     QUERY_PORT="${QUERY_PORT:-27015}"
+    is_numeric "QUERY_PORT"
     ASA_PORT="${ASA_PORT:-7777}"
-
-    RCON_ENABLED="${RCON_ENABLED:-""}"
-    # set RCON_ENABLED to false if not set
-    if [ "${RCON_ENABLED,,}" = "true" ]; then
-        RCON_ENABLED="True"
-    elif [ "${RCON_ENABLED,,}" = "false" ]; then
-        RCON_ENABLED="False"
-    fi
+    is_numeric "ASA_PORT"
+    RCON_ENABLED="$(get_bool "RCON_ENABLED" "FALSE")"
     RCON_PORT="${RCON_PORT:-27020}"
+    is_numeric "RCON_PORT"
     RCON_SERVER_GAME_LOG_BUFFER="${RCON_SERVER_GAME_LOG_BUFFER:-""}"
-    # validate that the value is a number
-    if [ -n "$RCON_SERVER_GAME_LOG_BUFFER" ]; then
-        if ! [[ "$RCON_SERVER_GAME_LOG_BUFFER" =~ ^[0-9]+$ ]]; then
-            echo "ERROR: The RCON server game log buffer must be a number."
-            exit 1
-        fi
-    fi
-
+    is_numeric "RCON_SERVER_GAME_LOG_BUFFER"
     AUTO_SAVE_PERIOD_MINUTES="${AUTO_SAVE_PERIOD_MINUTES:-""}"
-
+    is_numeric "AUTO_SAVE_PERIOD_MINUTES"
     IMPLANT_SUICIDE_CD="${IMPLANT_SUICIDE_CD,-""}"
-    # validate that the value is a number
-    if [ -n "$IMPLANT_SUICIDE_CD" ]; then
-        if ! [[ "$IMPLANT_SUICIDE_CD" =~ ^[0-9]+$ ]]; then
-            echo "ERROR: The implant suicide cd must be a number."
-            exit 1
-        fi
-    fi
-
+    is_numeric "IMPLANT_SUICIDE_CD"
     DIFFICULTY_OFFSET="${DIFFICULTY_OFFSET:-""}"
-    # validate that difficulty offset is a number between 0.01 and 1.0
-    if [ -n "$DIFFICULTY_OFFSET" ]; then
-        if ! [[ "$DIFFICULTY_OFFSET" =~ ^[0-9]+(\.[0-9]+)?$ ]]; then
-            echo "ERROR: The difficulty offset must be a number between 0.01 and 1.0."
-            exit 1
-        fi
-        if (( $(echo "$DIFFICULTY_OFFSET > 1.0" | bc -l) )) || (( $(echo "$DIFFICULTY_OFFSET < 0.01" | bc -l) )); then
-            echo "WARNING: The difficulty offset must be a number between 0.01 and 1.0."
-        fi
-    fi
-
+    is_numeric "DIFFICULTY_OFFSET" "0.01" ""
     OVERRIDE_OFFICIAL_DIFFICULTY="${OVERRIDE_OFFICIAL_DIFFICULTY:-""}"
-    # validate that override official difficulty is a number
-    if [ -n "$OVERRIDE_OFFICIAL_DIFFICULTY" ]; then
-        if ! [[ "$OVERRIDE_OFFICIAL_DIFFICULTY" =~ ^-?[0-9]+(\.[0-9]+)?$ ]]; then
-            echo "ERROR: The override official difficulty must be a number."
-            exit 1
-        fi
-    fi
-
+    is_numeric "OVERRIDE_OFFICIAL_DIFFICULTY"
     SERVER_AUTO_FORCE_RESPAWN_WILD_DINOS_INTERVAL="${SERVER_AUTO_FORCE_RESPAWN_WILD_DINOS_INTERVAL:-""}"
-    # validate that the value is a number
-    if [ -n "$SERVER_AUTO_FORCE_RESPAWN_WILD_DINOS_INTERVAL" ]; then
-        if ! [[ "$SERVER_AUTO_FORCE_RESPAWN_WILD_DINOS_INTERVAL" =~ ^-?[0-9]+(\.[0-9]+)?$ ]]; then
-            echo "ERROR: The server auto force respawn wild dinos interval must be a number in seconds."
-            exit 1
-        fi
-    fi
-
+    is_numeric "SERVER_AUTO_FORCE_RESPAWN_WILD_DINOS_INTERVAL"
     ITEM_STACK_SIZE_MULTIPLIER="${ITEM_STACK_SIZE_MULTIPLIER:-""}"
-    # validate that the value is a number
-    if [ -n "$ITEM_STACK_SIZE_MULTIPLIER" ]; then
-        if ! [[ "$ITEM_STACK_SIZE_MULTIPLIER" =~ ^-?[0-9]+(\.[0-9]+)?$ ]]; then
-            echo "ERROR: The item stack size multiplier must be a number."
-            exit 1
-        fi
-    fi
-
+    is_numeric "ITEM_STACK_SIZE_MULTIPLIER"
     STRUCTURE_PREVENT_RESOURCE_RADIUS_MULTIPLIER="${STRUCTURE_PREVENT_RESOURCE_RADIUS_MULTIPLIER:-""}"
-    # validate that the value is a number
-    if [ -n "$STRUCTURE_PREVENT_RESOURCE_RADIUS_MULTIPLIER" ]; then
-        if ! [[ "$STRUCTURE_PREVENT_RESOURCE_RADIUS_MULTIPLIER" =~ ^-?[0-9]+(\.[0-9]+)?$ ]]; then
-            echo "ERROR: The structure prevent resource radius multiplier must be a number."
-            exit 1
-        fi
-    fi
-
+    is_numeric "STRUCTURE_PREVENT_RESOURCE_RADIUS_MULTIPLIER"
     TRIBE_NAME_CHANGE_COOLDOWN="${TRIBE_NAME_CHANGE_COOLDOWN:-""}"
-    # validate that the value is a number
-    if [ -n "$TRIBE_NAME_CHANGE_COOLDOWN" ]; then
-        if ! [[ "$TRIBE_NAME_CHANGE_COOLDOWN" =~ ^[0-9]+(\.[0-9]+)?$ ]]; then
-            echo "ERROR: The tribe name change cooldown must be a number."
-            exit 1
-        fi
-    fi
+    is_numeric "TRIBE_NAME_CHANGE_COOLDOWN"
 
-    # set PVE to false if not set
-    ENABLE_PVP="${ENABLE_PVP:-""}"
-    if [ "${ENABLE_PVP,,}" = "true" ]; then
-        ENABLE_PVE="False"
-    elif [ "${ENABLE_PVP,,}" = "false" ]; then
-        ENABLE_PVE="True"
-    fi
-
-    ALLOW_HITMARKERS="${ALLOW_HITMARKERS:-""}"
-    if [ "${ALLOW_HITMARKERS,,}" = "true" ]; then
-        ALLOW_HITMARKERS="True"
-    elif [ "${ALLOW_HITMARKERS,,}" = "false" ]; then
-        ALLOW_HITMARKERS="False"
-    fi
-
-    ALLOW_HIDE_DAMAGE_SOURCE_FROM_LOGS="${ALLOW_HIDE_DAMAGE_SOURCE_FROM_LOGS:-""}"
-    if [ "${ALLOW_HIDE_DAMAGE_SOURCE_FROM_LOGS,,}" = "true" ]; then
-        ALLOW_HIDE_DAMAGE_SOURCE_FROM_LOGS="True"
-    elif [ "${ALLOW_HIDE_DAMAGE_SOURCE_FROM_LOGS,,}" = "false" ]; then
-        ALLOW_HIDE_DAMAGE_SOURCE_FROM_LOGS="False"
-    fi
-
-    SHOW_MAP_PLAYER_LOCATION="${SHOW_MAP_PLAYER_LOCATION:-""}"
-    if [ "${SHOW_MAP_PLAYER_LOCATION,,}" = "true" ]; then
-        SHOW_MAP_PLAYER_LOCATION="True"
-    elif [ "${SHOW_MAP_PLAYER_LOCATION,,}" = "false" ]; then
-        SHOW_MAP_PLAYER_LOCATION="False"
-    fi
-
-    SERVER_CROSSHAIR="${SERVER_CROSSHAIR:-""}"
-    if [ "${SERVER_CROSSHAIR,,}" = "true" ]; then
-        SERVER_CROSSHAIR="True"
-    elif [ "${SERVER_CROSSHAIR,,}" = "false" ]; then
-        SERVER_CROSSHAIR="False"
-    fi
-
-    DISABLE_DINO_DECAY_PVE="${DISABLE_DINO_DECAY_PVE:-""}"
-    if [ "${DISABLE_DINO_DECAY_PVE,,}" = "true" ]; then
-        DISABLE_DINO_DECAY_PVE="True"
-    elif [ "${DISABLE_DINO_DECAY_PVE,,}" = "false" ]; then
-        DISABLE_DINO_DECAY_PVE="False"
-    fi
-
-    ALWAYS_ALLOW_STRUCTURE_PICKUP="${ALWAYS_ALLOW_STRUCTURE_PICKUP:-""}"
-    if [ "${ALWAYS_ALLOW_STRUCTURE_PICKUP,,}" = "true" ]; then
-        ALWAYS_ALLOW_STRUCTURE_PICKUP="True"
-    elif [ "${ALWAYS_ALLOW_STRUCTURE_PICKUP,,}" = "false" ]; then
-        ALWAYS_ALLOW_STRUCTURE_PICKUP="False"
-    fi
-
-    ALLOW_CRATE_SPAWNS_ON_TOP_OF_STRUCTURES="${ALLOW_CRATE_SPAWNS_ON_TOP_OF_STRUCTURES:-""}"
-    if [ "${ALLOW_CRATE_SPAWNS_ON_TOP_OF_STRUCTURES,,}" = "true" ]; then
-        ALLOW_CRATE_SPAWNS_ON_TOP_OF_STRUCTURES="True"
-    elif [ "${ALLOW_CRATE_SPAWNS_ON_TOP_OF_STRUCTURES,,}" = "false" ]; then
-        ALLOW_CRATE_SPAWNS_ON_TOP_OF_STRUCTURES="False"
-    fi
-
-    ALLOW_FLYER_CARRY_PVE="${ALLOW_FLYER_CARRY_PVE:-""}"
-    if [ "${ALLOW_FLYER_CARRY_PVE,,}" = "true" ]; then
-        ALLOW_FLYER_CARRY_PVE="True"
-    elif [ "${ALLOW_FLYER_CARRY_PVE,,}" = "false" ]; then
-        ALLOW_FLYER_CARRY_PVE="False"
-    fi
-
-    PREVENT_DOWNLOAD_SURVIVORS="${PREVENT_DOWNLOAD_SURVIVORS:-""}"
-    if [ "${PREVENT_DOWNLOAD_SURVIVORS,,}" = "true" ]; then
-        PREVENT_DOWNLOAD_SURVIVORS="True"
-    elif [ "${PREVENT_DOWNLOAD_SURVIVORS,,}" = "false" ]; then
-        PREVENT_DOWNLOAD_SURVIVORS="False"
-    fi
-
-    PREVENT_DOWNLOAD_ITEMS="${PREVENT_DOWNLOAD_ITEMS:-""}"
-    if [ "${PREVENT_DOWNLOAD_ITEMS,,}" = "true" ]; then
-        PREVENT_DOWNLOAD_ITEMS="True"
-    elif [ "${PREVENT_DOWNLOAD_ITEMS,,}" = "false" ]; then
-        PREVENT_DOWNLOAD_ITEMS="False"
-    fi
-
-    PREVENT_DOWNLOAD_DINOS="${PREVENT_DOWNLOAD_DINOS:-""}"
-    if [ "${PREVENT_DOWNLOAD_DINOS,,}" = "true" ]; then
-        PREVENT_DOWNLOAD_DINOS="True"
-    elif [ "${PREVENT_DOWNLOAD_DINOS,,}" = "false" ]; then
-        PREVENT_DOWNLOAD_DINOS="False"
-    fi
-
-    PREVENT_UPLOAD_SURVIVORS="${PREVENT_UPLOAD_SURVIVORS:-""}"
-    if [ "${PREVENT_UPLOAD_SURVIVORS,,}" = "true" ]; then
-        PREVENT_UPLOAD_SURVIVORS="True"
-    elif [ "${PREVENT_UPLOAD_SURVIVORS,,}" = "false" ]; then
-        PREVENT_UPLOAD_SURVIVORS="False"
-    fi
-
-    PREVENT_UPLOAD_ITEMS="${PREVENT_UPLOAD_ITEMS:-""}"
-    if [ "${PREVENT_UPLOAD_ITEMS,,}" = "true" ]; then
-        PREVENT_UPLOAD_ITEMS="True"
-    elif [ "${PREVENT_UPLOAD_ITEMS,,}" = "false" ]; then
-        PREVENT_UPLOAD_ITEMS="False"
-    fi
-
-    PREVENT_UPLOAD_DINOS="${PREVENT_UPLOAD_DINOS:-""}"
-    if [ "${PREVENT_UPLOAD_DINOS,,}" = "true" ]; then
-        PREVENT_UPLOAD_DINOS="True"
-    elif [ "${PREVENT_UPLOAD_DINOS,,}" = "false" ]; then
-        PREVENT_UPLOAD_DINOS="False"
-    fi
+    ENABLE_PVE="$(get_bool "ENABLE_PVE" "")"
+    ALLOW_HITMARKERS="$(get_bool "ALLOW_HITMARKERS" "")"
+    ALLOW_HIDE_DAMAGE_SOURCE_FROM_LOGS="$(get_bool "ALLOW_HIDE_DAMAGE_SOURCE_FROM_LOGS" "")"
+    SHOW_MAP_PLAYER_LOCATION="$(get_bool "SHOW_MAP_PLAYER_LOCATION" "")"
+    SERVER_CROSSHAIR="$(get_bool "SERVER_CROSSHAIR" "")"
+    DISABLE_DINO_DECAY_PVE="$(get_bool "DISABLE_DINO_DECAY_PVE" "")"
+    ALWAYS_ALLOW_STRUCTURE_PICKUP="$(get_bool "ALWAYS_ALLOW_STRUCTURE_PICKUP" "")"
+    ALLOW_CRATE_SPAWNS_ON_TOP_OF_STRUCTURES="$(get_bool "ALLOW_CRATE_SPAWNS_ON_TOP_OF_STRUCTURES" "")"
+    ALLOW_FLYER_CARRY_PVE="$(get_bool "ALLOW_FLYER_CARRY_PVE" "")"
+    PREVENT_DOWNLOAD_SURVIVORS="$(get_bool "PREVENT_DOWNLOAD_SURVIVORS" "")"
+    PREVENT_DOWNLOAD_ITEMS="$(get_bool "PREVENT_DOWNLOAD_ITEMS" "")"
+    PREVENT_DOWNLOAD_DINOS="$(get_bool "PREVENT_DOWNLOAD_DINOS" "")"
+    PREVENT_UPLOAD_SURVIVORS="$(get_bool "PREVENT_UPLOAD_SURVIVORS" "")"
+    PREVENT_UPLOAD_ITEMS="$(get_bool "PREVENT_UPLOAD_ITEMS" "")"
+    PREVENT_UPLOAD_DINOS="$(get_bool "PREVENT_UPLOAD_DINOS" "")"
 
     STRUCTURE_PICKUP_TIME_AFTER_PLACEMENT="${STRUCTURE_PICKUP_TIME_AFTER_PLACEMENT:-""}"
-    # validate that the value is a number
-    if [ -n "$STRUCTURE_PICKUP_TIME_AFTER_PLACEMENT" ]; then
-        if ! [[ "$STRUCTURE_PICKUP_TIME_AFTER_PLACEMENT" =~ ^[0-9]+$ ]]; then
-            echo "ERROR: The structure pickup time after placement must be a number."
-            exit 1
-        fi
-    fi
-
+    is_numeric "STRUCTURE_PICKUP_TIME_AFTER_PLACEMENT"
     STRUCTURE_PICKUP_HOLD_DURATION="${STRUCTURE_PICKUP_HOLD_DURATION:-""}"
-    # validate that the value is a number
-    if [ -n "$STRUCTURE_PICKUP_HOLD_DURATION" ]; then
-        if ! [[ "$STRUCTURE_PICKUP_HOLD_DURATION" =~ ^-?[0-9]+(\.[0-9]+)?$ ]]; then
-            echo "ERROR: The structure pickup hold duration must be a number."
-            exit 1
-        fi
-    fi
-
+    is_numeric "STRUCTURE_PICKUP_HOLD_DURATION"
     MAX_STRUCTURES_IN_RANGE="${MAX_STRUCTURES_IN_RANGE:-""}"
-    # validate that the value is a number
-    if [ -n "$MAX_STRUCTURES_IN_RANGE" ]; then
-        if ! [[ "$MAX_STRUCTURES_IN_RANGE" =~ ^[0-9]+$ ]]; then
-            echo "ERROR: The max structures in range must be a number."
-            exit 1
-        fi
-    fi
-
+    is_numeric "MAX_STRUCTURES_IN_RANGE"
     START_TIME_HOUR="${START_TIME_HOUR:-""}"
-    # validate that the value is a number
-    if [ -n "$START_TIME_HOUR" ]; then
-        if ! [[ "$START_TIME_HOUR" =~ ^-?[0-9]+$ ]]; then
-            echo "ERROR: The start time hour must be a number."
-            exit 1
-        fi
-    fi
-
+    is_numeric "START_TIME_HOUR"
     KICK_IDLE_PLAYERS_PERIOD="${KICK_IDLE_PLAYERS_PERIOD:-""}"
-    # validate that the value is a number
-    if [ -n "$KICK_IDLE_PLAYERS_PERIOD" ]; then
-        if ! [[ "$KICK_IDLE_PLAYERS_PERIOD" =~ ^[0-9]+$ ]]; then
-            echo "ERROR: The kick idle players period must be a number."
-            exit 1
-        fi
-    fi
-
+    is_numeric "KICK_IDLE_PLAYERS_PERIOD"
     PER_PLATFORM_MAX_STRUCTURES_MULTIPLIER="${PER_PLATFORM_MAX_STRUCTURES_MULTIPLIER:-""}"
-    # validate that the value is a number
-    if [ -n "$PER_PLATFORM_MAX_STRUCTURES_MULTIPLIER" ]; then
-        if ! [[ "$PER_PLATFORM_MAX_STRUCTURES_MULTIPLIER" =~ ^-?[0-9]+(\.[0-9]+)?$ ]]; then
-            echo "ERROR: The per platform max structures multiplier must be a number."
-            exit 1
-        fi
-    fi
-
+    is_numeric "PER_PLATFORM_MAX_STRUCTURES_MULTIPLIER"
     PLATFORM_SADDLE_BUILD_AREA_BOUNDS_MULTIPLIER="${PLATFORM_SADDLE_BUILD_AREA_BOUNDS_MULTIPLIER:-""}"
-    # validate that the value is a number
-    if [ -n "$PLATFORM_SADDLE_BUILD_AREA_BOUNDS_MULTIPLIER" ]; then
-        if ! [[ "$PLATFORM_SADDLE_BUILD_AREA_BOUNDS_MULTIPLIER" =~ ^-?[0-9]+(\.[0-9]+)?$ ]]; then
-            echo "ERROR: The platform saddle build area bounds multiplier must be a number."
-            exit 1
-        fi
-    fi
-
+    is_numeric "PLATFORM_SADDLE_BUILD_AREA_BOUNDS_MULTIPLIER"
     DINO_DAMAGE_MULTIPLIER="${DINO_DAMAGE_MULTIPLIER:-""}"
-    # validate that the value is a number
-    if [ -n "$DINO_DAMAGE_MULTIPLIER" ]; then
-        if ! [[ "$DINO_DAMAGE_MULTIPLIER" =~ ^-?[0-9]+(\.[0-9]+)?$ ]]; then
-            echo "ERROR: The dino damage multiplier must be a number."
-            exit 1
-        fi
-    fi
-
+    is_numeric "DINO_DAMAGE_MULTIPLIER"
     PVE_DINO_DECAY_PERIOD_MULTIPLIER="${PVE_DINO_DECAY_PERIOD_MULTIPLIER:-""}"
-    # validate that the value is a number
-    if [ -n "$PVE_DINO_DECAY_PERIOD_MULTIPLIER" ]; then
-        if ! [[ "$PVE_DINO_DECAY_PERIOD_MULTIPLIER" =~ ^-?[0-9]+(\.[0-9]+)?$ ]]; then
-            echo "ERROR: The PVE dino decay period multiplier must be a number."
-            exit 1
-        fi
-    fi
-
+    is_numeric "PVE_DINO_DECAY_PERIOD_MULTIPLIER"
     PVE_STRUCTURE_DECAY_PERIOD_MULTIPLIER="${PVE_STRUCTURE_DECAY_PERIOD_MULTIPLIER:-""}"
-    # validate that the value is a number
-    if [ -n "$PVE_STRUCTURE_DECAY_PERIOD_MULTIPLIER" ]; then
-        if ! [[ "$PVE_STRUCTURE_DECAY_PERIOD_MULTIPLIER" =~ ^-?[0-9]+(\.[0-9]+)?$ ]]; then
-            echo "ERROR: The PVE structure decay period multiplier must be a number."
-            exit 1
-        fi
-    fi
-
+    is_numeric "PVE_STRUCTURE_DECAY_PERIOD_MULTIPLIER"
     RAID_DINO_CHARACTER_FOOD_DRAIN_MULTIPLIER="${RAID_DINO_CHARACTER_FOOD_DRAIN_MULTIPLIER:-""}"
-    # validate that the value is a number
-    if [ -n "$RAID_DINO_CHARACTER_FOOD_DRAIN_MULTIPLIER" ]; then
-        if ! [[ "$RAID_DINO_CHARACTER_FOOD_DRAIN_MULTIPLIER" =~ ^-?[0-9]+(\.[0-9]+)?$ ]]; then
-            echo "ERROR: The raid dino character food drain multiplier must be a number."
-            exit 1
-        fi
-    fi
-
+    is_numeric "RAID_DINO_CHARACTER_FOOD_DRAIN_MULTIPLIER"
     XP_MULTIPLIER="${XP_MULTIPLIER:-""}"
-    # validate that the value is a number
-    if [ -n "$XP_MULTIPLIER" ]; then
-        if ! [[ "$XP_MULTIPLIER" =~ ^-?[0-9]+(\.[0-9]+)?$ ]]; then
-            echo "ERROR: The XP multiplier must be a number."
-            exit 1
-        fi
-    fi
-
+    is_numeric "XP_MULTIPLIER"
     TAMING_SPEED_MULTIPLIER="${TAMING_SPEED_MULTIPLIER:-""}"
-    # validate that the value is a number
-    if [ -n "$TAMING_SPEED_MULTIPLIER" ]; then
-        if ! [[ "$TAMING_SPEED_MULTIPLIER" =~ ^-?[0-9]+(\.[0-9]+)?$ ]]; then
-            echo "ERROR: The taming speed multiplier must be a number."
-            exit 1
-        fi
-    fi
-
+    is_numeric "TAMING_SPEED_MULTIPLIER"
     HARVEST_AMOUNT_MULTIPLIER="${HARVEST_AMOUNT_MULTIPLIER:-""}"
-    # validate that the value is a number
-    if [ -n "$HARVEST_AMOUNT_MULTIPLIER" ]; then
-        if ! [[ "$HARVEST_AMOUNT_MULTIPLIER" =~ ^-?[0-9]+(\.[0-9]+)?$ ]]; then
-            echo "ERROR: The harvest amount multiplier must be a number."
-            exit 1
-        fi
-    fi
-
+    is_numeric "HARVEST_AMOUNT_MULTIPLIER"
     STRUCTURE_RESISTANCE_MULTIPLIER="${STRUCTURE_RESISTANCE_MULTIPLIER:-""}"
-    # validate that the value is a number
-    if [ -n "$STRUCTURE_RESISTANCE_MULTIPLIER" ]; then
-        if ! [[ "$STRUCTURE_RESISTANCE_MULTIPLIER" =~ ^-?[0-9]+(\.[0-9]+)?$ ]]; then
-            echo "ERROR: The structure resistance multiplier must be a number."
-            exit 1
-        fi
-    fi
-
-    OXYGEN_SWIM_SPEED_STAT_MULTIPLIER="${OXYGEN_SWIM_SPEED_STAT_MULTIPLIER:-"1"}"
-    # validate that the value is a number
-    if [ -n "$OXYGEN_SWIM_SPEED_STAT_MULTIPLIER" ]; then
-        if ! [[ "$OXYGEN_SWIM_SPEED_STAT_MULTIPLIER" =~ ^-?[0-9]+(\.[0-9]+)?$ ]]; then
-            echo "ERROR: The oxygen swim speed stat multiplier must be a number."
-            exit 1
-        fi
-    fi
-
+    is_numeric "STRUCTURE_RESISTANCE_MULTIPLIER"
+    OXYGEN_SWIM_SPEED_STAT_MULTIPLIER="${OXYGEN_SWIM_SPEED_STAT_MULTIPLIER:-""}"
+    is_numeric "OXYGEN_SWIM_SPEED_STAT_MULTIPLIER"
     BABY_IMPRINTING_STAT_SCALE_MULTIPLIER="${BABY_IMPRINTING_STAT_SCALE_MULTIPLIER:-""}"
-    # validate that the value is a number
-    if [ -n "$BABY_IMPRINTING_STAT_SCALE_MULTIPLIER" ]; then
-        if ! [[ "$BABY_IMPRINTING_STAT_SCALE_MULTIPLIER" =~ ^-?[0-9]+(\.[0-9]+)?$ ]]; then
-            echo "ERROR: The baby imprinting stat scale multiplier must be a number."
-            exit 1
-        fi
-    fi
-
+    is_numeric "BABY_IMPRINTING_STAT_SCALE_MULTIPLIER"
     BABY_CUDDLE_INTERVAL_MULTIPLIER="${BABY_CUDDLE_INTERVAL_MULTIPLIER:-""}"
-    # validate that the value is a number
-    if [ -n "$BABY_CUDDLE_INTERVAL_MULTIPLIER" ]; then
-        if ! [[ "$BABY_CUDDLE_INTERVAL_MULTIPLIER" =~ ^-?[0-9]+(\.[0-9]+)?$ ]]; then
-            echo "ERROR: The baby cuddle interval multiplier must be a number."
-            exit 1
-        fi
-    fi
-
+    is_numeric "BABY_CUDDLE_INTERVAL_MULTIPLIER"
     BABY_CUDDLE_GRACE_PERIOD_MULTIPLIER="${BABY_CUDDLE_GRACE_PERIOD_MULTIPLIER:-""}"
-    # validate that the value is a number
-    if [ -n "$BABY_CUDDLE_GRACE_PERIOD_MULTIPLIER" ]; then
-        if ! [[ "$BABY_CUDDLE_GRACE_PERIOD_MULTIPLIER" =~ ^-?[0-9]+(\.[0-9]+)?$ ]]; then
-            echo "ERROR: The baby cuddle grace period multiplier must be a number."
-            exit 1
-        fi
-    fi
-
+    is_numeric "BABY_CUDDLE_GRACE_PERIOD_MULTIPLIER"
     BABY_CUDDLE_LOSE_IMPRINT_QUALITY_SPEED_MULTIPLIER="${BABY_CUDDLE_LOSE_IMPRINT_QUALITY_SPEED_MULTIPLIER:-""}"
-    # validate that the value is a number
-    if [ -n "$BABY_CUDDLE_LOSE_IMPRINT_QUALITY_SPEED_MULTIPLIER" ]; then
-        if ! [[ "$BABY_CUDDLE_LOSE_IMPRINT_QUALITY_SPEED_MULTIPLIER" =~ ^-?[0-9]+(\.[0-9]+)?$ ]]; then
-            echo "ERROR: The baby cuddle lose imprint quality speed multiplier must be a number."
-            exit 1
-        fi
-    fi
-
+    is_numeric "BABY_CUDDLE_LOSE_IMPRINT_QUALITY_SPEED_MULTIPLIER"
     GLOBAL_SPOILING_TIME_MULTIPLIER="${GLOBAL_SPOILING_TIME_MULTIPLIER:-""}"
-    # validate that the value is a number
-    if [ -n "$GLOBAL_SPOILING_TIME_MULTIPLIER" ]; then
-        if ! [[ "$GLOBAL_SPOILING_TIME_MULTIPLIER" =~ ^-?[0-9]+(\.[0-9]+)?$ ]]; then
-            echo "ERROR: The global spoiling time multiplier must be a number."
-            exit 1
-        fi
-    fi
-
+    is_numeric "GLOBAL_SPOILING_TIME_MULTIPLIER"
     GLOBAL_ITEM_DECOMPOSITION_TIME_MULTIPLIER="${GLOBAL_ITEM_DECOMPOSITION_TIME_MULTIPLIER:-""}"
-    # validate that the value is a number
-    if [ -n "$GLOBAL_ITEM_DECOMPOSITION_TIME_MULTIPLIER" ]; then
-        if ! [[ "$GLOBAL_ITEM_DECOMPOSITION_TIME_MULTIPLIER" =~ ^-?[0-9]+(\.[0-9]+)?$ ]]; then
-            echo "ERROR: The global item decomposition time multiplier must be a number."
-            exit 1
-        fi
-    fi
-
+    is_numeric "GLOBAL_ITEM_DECOMPOSITION_TIME_MULTIPLIER"
     GLOBAL_CORPSE_DECOMPOSITION_TIME_MULTIPLIER="${GLOBAL_CORPSE_DECOMPOSITION_TIME_MULTIPLIER:-""}"
-    # validate that the value is a number
-    if [ -n "$GLOBAL_CORPSE_DECOMPOSITION_TIME_MULTIPLIER" ]; then
-        if ! [[ "$GLOBAL_CORPSE_DECOMPOSITION_TIME_MULTIPLIER" =~ ^-?[0-9]+(\.[0-9]+)?$ ]]; then
-            echo "ERROR: The global corpse decomposition time multiplier must be a number."
-            exit 1
-        fi
-    fi
-
+    is_numeric "GLOBAL_CORPSE_DECOMPOSITION_TIME_MULTIPLIER"
     PVP_ZONE_STRUCTURE_DAMAGE_MULTIPLIER="${PVP_ZONE_STRUCTURE_DAMAGE_MULTIPLIER:-""}"
-    # validate that the value is a number
-    if [ -n "$PVP_ZONE_STRUCTURE_DAMAGE_MULTIPLIER" ]; then
-        if ! [[ "$PVP_ZONE_STRUCTURE_DAMAGE_MULTIPLIER" =~ ^-?[0-9]+(\.[0-9]+)?$ ]]; then
-            echo "ERROR: The PVP zone structure damage multiplier must be a number."
-            exit 1
-        fi
-    fi
-
+    is_numeric "PVP_ZONE_STRUCTURE_DAMAGE_MULTIPLIER"
     CROP_GROWTH_SPEED_MULTIPLIER="${CROP_GROWTH_SPEED_MULTIPLIER:-""}"
-    # validate that the value is a number
-    if [ -n "$CROP_GROWTH_SPEED_MULTIPLIER" ]; then
-        if ! [[ "$CROP_GROWTH_SPEED_MULTIPLIER" =~ ^-?[0-9]+(\.[0-9]+)?$ ]]; then
-            echo "ERROR: The crop growth speed multiplier must be a number."
-            exit 1
-        fi
-    fi
-
+    is_numeric "CROP_GROWTH_SPEED_MULTIPLIER"
     LAY_EGG_INTERVAL_MULTIPLIER="${LAY_EGG_INTERVAL_MULTIPLIER:-""}"
-    # validate that the value is a number
-    if [ -n "$LAY_EGG_INTERVAL_MULTIPLIER" ]; then
-        if ! [[ "$LAY_EGG_INTERVAL_MULTIPLIER" =~ ^-?[0-9]+(\.[0-9]+)?$ ]]; then
-            echo "ERROR: The lay egg interval multiplier must be a number."
-            exit 1
-        fi
-    fi
-
+    is_numeric "LAY_EGG_INTERVAL_MULTIPLIER"
     POOP_INTERVAL_MULTIPLIER="${POOP_INTERVAL_MULTIPLIER:-""}"
-    # validate that the value is a number
-    if [ -n "$POOP_INTERVAL_MULTIPLIER" ]; then
-        if ! [[ "$POOP_INTERVAL_MULTIPLIER" =~ ^-?[0-9]+(\.[0-9]+)?$ ]]; then
-            echo "ERROR: The poop interval multiplier must be a number."
-            exit 1
-        fi
-    fi
-
+    is_numeric "POOP_INTERVAL_MULTIPLIER"
     EGG_HATCH_SPEED_MULTIPLIER="${EGG_HATCH_SPEED_MULTIPLIER:-""}"
-    # validate that the value is a number
-    if [ -n "$EGG_HATCH_SPEED_MULTIPLIER" ]; then
-        if ! [[ "$EGG_HATCH_SPEED_MULTIPLIER" =~ ^-?[0-9]+(\.[0-9]+)?$ ]]; then
-            echo "ERROR: The egg hatch speed multiplier must be a number."
-            exit 1
-        fi
-    fi
-
+    is_numeric "EGG_HATCH_SPEED_MULTIPLIER"
     CROP_DECAY_SPEED_MULTIPLIER="${CROP_DECAY_SPEED_MULTIPLIER:-""}"
-    # validate that the value is a number
-    if [ -n "$CROP_DECAY_SPEED_MULTIPLIER" ]; then
-        if ! [[ "$CROP_DECAY_SPEED_MULTIPLIER" =~ ^-?[0-9]+(\.[0-9]+)?$ ]]; then
-            echo "ERROR: The crop decay speed multiplier must be a number."
-            exit 1
-        fi
-    fi
-
+    is_numeric "CROP_DECAY_SPEED_MULTIPLIER"
     MATING_INTERVAL_MULTIPLIER="${MATING_INTERVAL_MULTIPLIER:-""}"
-    # validate that the value is a number
-    if [ -n "$MATING_INTERVAL_MULTIPLIER" ]; then
-        if ! [[ "$MATING_INTERVAL_MULTIPLIER" =~ ^-?[0-9]+(\.[0-9]+)?$ ]]; then
-            echo "ERROR: The mating interval multiplier must be a number."
-            exit 1
-        fi
-    fi
-
+    is_numeric "MATING_INTERVAL_MULTIPLIER"
     BABY_MATURE_SPEED_MULTIPLIER="${BABY_MATURE_SPEED_MULTIPLIER:-""}"
-    # validate that the value is a number
-    if [ -n "$BABY_MATURE_SPEED_MULTIPLIER" ]; then
-        if ! [[ "$BABY_MATURE_SPEED_MULTIPLIER" =~ ^-?[0-9]+(\.[0-9]+)?$ ]]; then
-            echo "ERROR: The baby mature speed multiplier must be a number."
-            exit 1
-        fi
-    fi
-
+    is_numeric "BABY_MATURE_SPEED_MULTIPLIER"
     BABY_FOOD_CONSUMPTION_SPEED_MULTIPLIER="${BABY_FOOD_CONSUMPTION_SPEED_MULTIPLIER:-""}"
-    # validate that the value is a number
-    if [ -n "$BABY_FOOD_CONSUMPTION_SPEED_MULTIPLIER" ]; then
-        if ! [[ "$BABY_FOOD_CONSUMPTION_SPEED_MULTIPLIER" =~ ^-?[0-9]+(\.[0-9]+)?$ ]]; then
-            echo "ERROR: The baby food consumption speed multiplier must be a number."
-            exit 1
-        fi
-    fi
-
+    is_numeric "BABY_FOOD_CONSUMPTION_SPEED_MULTIPLIER"
     DINO_HARVESTING_DAMAGE_MULTIPLIER="${DINO_HARVESTING_DAMAGE_MULTIPLIER:-""}"
-    # validate that the value is a number
-    if [ -n "$DINO_HARVESTING_DAMAGE_MULTIPLIER" ]; then
-        if ! [[ "$DINO_HARVESTING_DAMAGE_MULTIPLIER" =~ ^-?[0-9]+(\.[0-9]+)?$ ]]; then
-            echo "ERROR: The dino harvesting damage multiplier must be a number."
-            exit 1
-        fi
-    fi
-
+    is_numeric "DINO_HARVESTING_DAMAGE_MULTIPLIER"
     PLAYER_HARVESTING_DAMAGE_MULTIPLIER="${PLAYER_HARVESTING_DAMAGE_MULTIPLIER:-""}"
-    # validate that the value is a number
-    if [ -n "$PLAYER_HARVESTING_DAMAGE_MULTIPLIER" ]; then
-        if ! [[ "$PLAYER_HARVESTING_DAMAGE_MULTIPLIER" =~ ^-?[0-9]+(\.[0-9]+)?$ ]]; then
-            echo "ERROR: The player harvesting damage multiplier must be a number."
-            exit 1
-        fi
-    fi
-
+    is_numeric "PLAYER_HARVESTING_DAMAGE_MULTIPLIER"
     KILL_XP_MULTIPLIER="${KILL_XP_MULTIPLIER:-""}"
-    # validate that the value is a number
-    if [ -n "$KILL_XP_MULTIPLIER" ]; then
-        if ! [[ "$KILL_XP_MULTIPLIER" =~ ^-?[0-9]+(\.[0-9]+)?$ ]]; then
-            echo "ERROR: The kill XP multiplier must be a number."
-            exit 1
-        fi
-    fi
-
+    is_numeric "KILL_XP_MULTIPLIER"
     HARVEST_XP_MULTIPLIER="${HARVEST_XP_MULTIPLIER:-""}"
-    # validate that the value is a number
-    if [ -n "$HARVEST_XP_MULTIPLIER" ]; then
-        if ! [[ "$HARVEST_XP_MULTIPLIER" =~ ^-?[0-9]+(\.[0-9]+)?$ ]]; then
-            echo "ERROR: The harvest XP multiplier must be a number."
-            exit 1
-        fi
-    fi
-
+    is_numeric "HARVEST_XP_MULTIPLIER"
     CRAFT_XP_MULTIPLIER="${CRAFT_XP_MULTIPLIER:-""}"
-    # validate that the value is a number
-    if [ -n "$CRAFT_XP_MULTIPLIER" ]; then
-        if ! [[ "$CRAFT_XP_MULTIPLIER" =~ ^-?[0-9]+(\.[0-9]+)?$ ]]; then
-            echo "ERROR: The craft XP multiplier must be a number."
-            exit 1
-        fi
-    fi
-
+    is_numeric "CRAFT_XP_MULTIPLIER"
     GENERIC_XP_MULTIPLIER="${GENERIC_XP_MULTIPLIER:-""}"
-    # validate that the value is a number
-    if [ -n "$GENERIC_XP_MULTIPLIER" ]; then
-        if ! [[ "$GENERIC_XP_MULTIPLIER" =~ ^-?[0-9]+(\.[0-9]+)?$ ]]; then
-            echo "ERROR: The generic XP multiplier must be a number."
-            exit 1
-        fi
-    fi
-
+    is_numeric "GENERIC_XP_MULTIPLIER"
     SPECIAL_XP_MULTIPLIER="${SPECIAL_XP_MULTIPLIER:-""}"
-    # validate that the value is a number
-    if [ -n "$SPECIAL_XP_MULTIPLIER" ]; then
-        if ! [[ "$SPECIAL_XP_MULTIPLIER" =~ ^-?[0-9]+(\.[0-9]+)?$ ]]; then
-            echo "ERROR: The special XP multiplier must be a number."
-            exit 1
-        fi
-    fi
-
-    MAX_TAMED_DINOS="${MAX_TAMED_DINOS:-5000}"
-    # validate that the value is a number
-    if [ -n "$MAX_TAMED_DINOS" ]; then
-        if ! [[ "$MAX_TAMED_DINOS" =~ ^-?[0-9]+$ ]]; then
-            echo "ERROR: The max tamed dinos must be a number."
-            exit 1
-        fi
-    fi
-
+    is_numeric "SPECIAL_XP_MULTIPLIER"
+    MAX_TAMED_DINOS="${MAX_TAMED_DINOS:-""}"
+    is_numeric "MAX_TAMED_DINOS"
     ALLOW_CHEATERS_URL="${ALLOW_CHEATERS_URL:-""}"
-    if [ -n "$ALLOW_CHEATERS_URL" ]; then
-        if ! [[ "$ALLOW_CHEATERS_URL" =~ ^http:// ]]; then
-            echo "ERROR: The allow cheaters url must be a valid URL. It must start with http://; https:// is not supported."
-            exit 1
-        fi
-    fi
-    ALLOW_CHEATERS_UPDATE_INTERVAL="${ALLOW_CHEATERS_UPDATE_INTERVAL:-"600"}"
-    # validate that the value is a number
-    if [ -n "$ALLOW_CHEATERS_UPDATE_INTERVAL" ]; then
-        if ! [[ "$ALLOW_CHEATERS_UPDATE_INTERVAL" =~ ^[0-9]+$ ]]; then
-            echo "ERROR: The allow cheaters update interval must be a number in seconds."
-            exit 1
-        fi
-    fi
-
+    is_url "ALLOW_CHEATERS_URL"
+    ALLOW_CHEATERS_UPDATE_INTERVAL="${ALLOW_CHEATERS_UPDATE_INTERVAL:-""}"
+    is_numeric "ALLOW_CHEATERS_UPDATE_INTERVAL"
     BAN_LIST_URL="${BAN_LIST_URL:-""}"
-    if [ -n "$BAN_LIST_URL" ]; then
-        if ! [[ "$BAN_LIST_URL" =~ ^http:// ]]; then
-            echo "ERROR: The ban list url must be a valid URL. It must start with http://; https:// is not supported."
-            exit 1
-        fi
-    fi
+    is_url "BAN_LIST_URL"
 
-    ALLOW_THIRD_PERSON_VIEW="${ALLOW_THIRD_PERSON_VIEW:-"TRUE"}"
-    if [ "${ALLOW_THIRD_PERSON_VIEW,,}" = "true" ]; then
-        ALLOW_THIRD_PERSON_VIEW="True"
-    else
-        ALLOW_THIRD_PERSON_VIEW="False"
-    fi
+    ALLOW_THIRD_PERSON_VIEW="$(get_bool "ALLOW_THIRD_PERSON_VIEW" "TRUE")"
+    ENABLE_MOTD="$(get_bool "ENABLE_MOTD" "FALSE")"
+    USE_EXCLUSIVE_LIST="$(get_bool "USE_EXCLUSIVE_LIST" "FALSE")"
+}
 
-    USE_EXCLUSIVE_LIST="${USE_EXCLUSIVE_LIST:-"FALSE"}"
-    if [ "${USE_EXCLUSIVE_LIST,,}" = "true" ]; then
-        USE_EXCLUSIVE_LIST="True"
-    else
-        USE_EXCLUSIVE_LIST="False"
+is_url() {
+  local var_name="$1"
+
+  # validate that the value is a URL
+  if [ -n "$var_name" ]; then
+    local value="${!var_name}"
+    if [ -n "$value" ]; then
+      if ! [[ "$value" =~ ^http:// ]]; then
+        echo "ERROR: The $var_name must be a valid URL. It must start with http://; https:// is not supported."
+        exit 1
+      fi
     fi
+  fi
+}
+
+get_bool() {
+  local var_name="$1"
+  local default_value="$2"
+
+  if [ -n "$var_name" ]; then
+    local value="${!var_name,,-"${default_value,,}"}"
+    if [ -n "$value" ]; then
+      if [ "$value" = "true" ] || [ "$value" = "yes" ] || [ "$value" = "1" ]; then
+        echo "True"
+      elif [ "$value" = "false" ] || [ "$value" = "no" ] || [ "$value" = "0" ]; then
+        echo "False"
+      else
+        echo ""
+      fi
+    fi
+  fi
+}
+
+is_numeric() {
+  local var_name="$1"
+
+  local min=""
+  local max=""
+
+  # validate that the value is a number
+  if [ -n "$var_name" ]; then
+    local value="${!var_name}"
+    if [ -n "$value" ]; then
+      if ! [[ "$value" =~ ^-?[0-9]+(\.[0-9]+)?$ ]]; then
+        echo "ERROR: The $var_name must be a number."
+        exit 1
+      fi
+    fi
+    if [ -n "$min" ]; then
+      if (( $(echo "$value < $min" | bc -l) )); then
+        echo "ERROR: The $var_name must be greater than or equal to $min."
+        exit 1
+      fi
+    fi
+    if [ -n "$max" ]; then
+      if (( $(echo "$value > $max" | bc -l) )); then
+        echo "ERROR: The $var_name must be less than or equal to $max."
+        exit 1
+      fi
+    fi
+  fi
 }
 
 
