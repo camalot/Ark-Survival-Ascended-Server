@@ -8,7 +8,8 @@ if [ -n "$WHITELIST_URL" ]; then
   exit 0
 fi
 
-WHITELIST_FILE="/usr/games/.wine/drive_c/POK/Steam/steamapps/common/ARK Survival Ascended Dedicated Server/ShooterGame/Binaries/Win64/PlayersExclusiveJoinList.txt"
+ASA_DIR="/usr/games/.wine/drive_c/POK/Steam/steamapps/common/ARK Survival Ascended Dedicated Server/ShooterGame"
+WHITELIST_FILE="$ASA_DIR/Binaries/Win64/PlayersExclusiveJoinList.txt"
 
 if [ ! -f "$WHITELIST_FILE" ]; then
   exit 0

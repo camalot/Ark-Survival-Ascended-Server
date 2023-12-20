@@ -582,18 +582,41 @@ start_server() {
   #   server_password_arg="?ServerPassword=${SERVER_PASSWORD}"
   # fi
 
-  # setup cron job to pull the "whitelist" every X minutes
-  # if [ "$WHITELIST_ENABLED" = "TRUE" ]; then
-  #   # if the UseExclusiveList is set to true, then we need to set the ExclusiveJoin to true
-  #     echo "Pulling whitelist every $WHITELIST_PULL_INTERVAL minutes..."
-  #     (crontab -l 2>/dev/null; echo "*/$WHITELIST_PULL_INTERVAL * * * * /usr/games/arkmanager cron pull_whitelist") | crontab -
-  # fi
-  # setup cron job to pull the "no check" list every X minutes
-  # if [ "$NO_CHECK_ENABLED" = "TRUE" ]; then
-  #     echo "Pulling no check list every $NO_CHECK_PULL_LIST_INTERVAL minutes..."
-  #     (crontab -l 2>/dev/null; echo "*/$NO_CHECK_LIST_PULL_INTERVAL * * * * /usr/games/arkmanager cron pull_no_check") | crontab -
-  # fi
+  # create a cron job to execute /usr/games/scripts/pull_whitelist.sh every X minutes
+  if [ "${ENABLE_WHITELIST,,}" = "true" ]; then
+    if [ -z "${WHITELIST_URL// }" ]; then
+      echo "ERROR: The WHITELIST_URL must be set when ENABLE_WHITELIST is set to true."
+      exit 1
+    fi
+    if [ -z "${WHITELIST_PULL_INTERVAL// }" ]; then
+      echo "ERROR: The WHITELIST_PULL_INTERVAL must be set when ENABLE_WHITELIST is set to true."
+      exit 1
+    fi
+    echo "Creating cron job to pull whitelist every $WHITELIST_PULL_INTERVAL minutes..."
+    (crontab -l 2>/dev/null; echo "*/$WHITELIST_PULL_INTERVAL * * * * /usr/games/scripts/pull_whitelist.sh") | crontab -
+  else
+    # remove the crontab job if it exists
+    echo "Removing whitelist cron job..."
+    (crontab -l 2>/dev/null | grep -v "/usr/games/scripts/pull_whitelist.sh") | crontab -
+  fi
 
+  # create a cron job to execute /usr/games/scripts/pull_no_check_list.sh every X minutes
+  if [ "${ENABLE_NO_CHECK_LIST,,}" = "true" ]; then
+    if [ -z "${NO_CHECK_LIST_URL// }" ]; then
+      echo "ERROR: The NO_CHECK_LIST_URL must be set when ENABLE_NO_CHECK_LIST is set to true."
+      exit 1
+    fi
+    if [ -z "${NO_CHECK_LIST_PULL_INTERVAL// }" ]; then
+      echo "ERROR: The NO_CHECK_LIST_PULL_INTERVAL must be set when ENABLE_NO_CHECK_LIST is set to true."
+      exit 1
+    fi
+    echo "Creating cron job to pull no check list every $NO_CHECK_LIST_PULL_INTERVAL minutes..."
+    (crontab -l 2>/dev/null; echo "*/$NO_CHECK_LIST_PULL_INTERVAL * * * * /usr/games/scripts/pull_no_check_list.sh") | crontab -
+  else
+    # remove the crontab job if it exists
+    echo "Removing no check list cron job..."
+    (crontab -l 2>/dev/null | grep -v "/usr/games/scripts/pull_no_check_list.sh") | crontab -
+  fi
 
   # Start the server with conditional arguments
   sudo -u games wine "$ASA_DIR/Binaries/Win64/ArkAscendedServer.exe" \
