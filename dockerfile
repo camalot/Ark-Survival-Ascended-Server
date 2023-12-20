@@ -74,3 +74,5 @@ RUN chmod +x /usr/games/scripts/*.sh
 
 # Set the entry point to Supervisord
 ENTRYPOINT ["/usr/games/scripts/init.sh"]
+
+HEALTHCHECK --interval=60s --timeout=30s --start-period=120s --retries=3 CMD [ "/usr/games/scripts/halthcheck.sh" ]
