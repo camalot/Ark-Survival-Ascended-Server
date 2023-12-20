@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 
-if [ -n "$ENABLE_WHITELIST" ] || [ "${ENABLE_WHITELIST,,}" != "true" ] || [ -z "${ENABLE_WHITELIST// }" ]; then
+if [ "${ENABLE_WHITELIST,,}" != "true" ]; then
   echo "Whitelist not enabled, exiting: '${ENABLE_WHITELIST,,}'"
   exit 0
 fi
 
-if [ -n "$WHITELIST_URL" ] || [ -z "${WHITELIST_URL// }"]; then
+if [ -z "${WHITELIST_URL// }" ]; then
   echo "Whitelist URL not set, exiting: '$WHITELIST_URL'"
   exit 0
 fi

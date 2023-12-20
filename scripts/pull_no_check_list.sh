@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
 
-if [ -n "$ENABLE_NO_CHECK_LIST" ] || [ "${ENABLE_NO_CHECK_LIST,,}" != "true" ]; then
+if [ "${ENABLE_NO_CHECK_LIST,,}" != "true" ]; then
+  echo "No check list not enabled, exiting: '${ENABLE_NO_CHECK_LIST,,}'"
   exit 0
 fi
-
-if [ -n "$NO_CHECK_LIST_URL" ]; then
+if [ -z "${NO_CHECK_LIST_URL// }" ]; then
+  echo "No check list URL not set, exiting: '$NO_CHECK_LIST_URL'"
   exit 0
 fi
 
@@ -12,6 +13,7 @@ ASA_DIR="/usr/games/.wine/drive_c/POK/Steam/steamapps/common/ARK Survival Ascend
 NO_CHECK_LIST_FILE="$ASA_DIR/Binaries/Win64/PlayersJoinNoCheckList.txt"
 
 if [ ! -f "$NO_CHECK_LIST_FILE" ]; then
+  echo "No check list file not found, exiting: '$NO_CHECK_LIST_FILE'"
   exit 0
 fi
 
