@@ -33,11 +33,11 @@ is_server_updating() {
 
 
 if is_process_running; then
-    if is_server_updating; then
-        exit 0
-    else
-        exit 1
-    fi
-else
-    exit 1
+  exit 0
 fi
+
+if is_server_updating; then
+  exit 0
+fi
+
+exit 1
