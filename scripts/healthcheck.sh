@@ -1,6 +1,8 @@
 #!/bin/bash
+# HEALTHCHECK SCRIPT USED BY DOCKER CONTAINER
 
 PID_FILE="/usr/games/ark_server.pid"
+UPDATE_FLAG="/usr/games/updating.flag"
 
 # Function to check if the server process is running
 is_process_running() {
@@ -18,7 +20,7 @@ is_process_running() {
 }
 
 is_server_updating() {
-  if [ -f "/usr/games/updating.flag" ]; then
+  if [ -f "$UPDATE_FLAG" ]; then
     return 0
   else
     return 1

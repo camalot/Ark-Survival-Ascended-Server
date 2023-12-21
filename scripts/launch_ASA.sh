@@ -1,7 +1,23 @@
 #!/bin/bash
 
+# load environment variables from .env file
+load_env() {
+  ENV_FILE="${ENV_FILE:-"/data/.env"}"
+  if [ -f "$ENV_FILE" ]; then
+    echo "Loading environment variables from $ENV_FILE"
+    set -o allexport
+    # shellcheck disable=SC1090
+    source "$ENV_FILE"
+    set +o allexport
+  else
+    echo "No .env file found. Using default values."
+  fi
+}
+
 # Initialize environment variables
 initialize_variables() {
+  load_env
+
   export DISPLAY=:0.0
   USERNAME=anonymous
   APPID=2430930
@@ -21,9 +37,15 @@ initialize_variables() {
   RESET_GAME_SETTINGS="${RESET_GAME_SETTINGS:-"FALSE"}"
   if [ "${RESET_GAME_SETTINGS,,}" = "true" ]; then
     # copy the default game.ini and gameusersettings.ini files from /usr/games/defaults/
+    local ini_dir
+    ini_dir="$ASA_DIR/Saved/Config/WindowsServer"
     echo "Resetting game settings to defaults"
-    cp -f /usr/games/defaults/game.ini "$ASA_DIR/Saved/Config/WindowsServer/Game.ini"
-    cp -f /usr/games/defaults/gameusersettings.ini "$ASA_DIR/Saved/Config/WindowsServer/GameUserSettings.ini"
+    cp -f /usr/games/defaults/game.ini "$ini_dir/Game.ini"
+    chown "$PUID":"$PGID" "${ini_dir}/Game.ini"
+    chmod 755 "${ini_dir}/Game.ini"
+    cp -f /usr/games/defaults/gameusersettings.ini "$ini_dir/GameUserSettings.ini"
+    chown "$PUID":"$PGID" "${ini_dir}/GameUserSettings.ini"
+    chmod 755 "${ini_dir}/GameUserSettings.ini"
   fi
 
   # Set server admin password from password file if set
