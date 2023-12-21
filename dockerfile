@@ -42,12 +42,18 @@ RUN apt-get update && \
   chmod +x /usr/local/bin/rcon-cli && \
   curl -L "https://github.com/bitnami/ini-file/releases/download/v${INI_FILE_VERSION}/ini-file-linux-amd64.tar.gz" | tar xvz && \
   mv ini-file-linux-amd64 /usr/local/bin/ini-file && \
-  chmod +x /usr/local/bin/ini-file && \
+  chmod +x /usr/local/bin/ini-file
+
+USER games
+WORKDIR "/usr/games"
+
+RUN \
   curl -sL https://steamcdn-a.akamaihd.net/client/installer/steamcmd.zip -o steamcmd.zip \
   && unzip steamcmd.zip -d "$PROGRAM_FILES/Steam" \
   && rm steamcmd.zip && \
   chown -R games:games "/usr/games" && \
   chown -R games:games "/usr/games/.wine" && \
+  chown -R games:games "$WINEPREFIX" && \
   chmod +x /usr/games/scripts/*.sh && \
   sed -i 's/\r//' /usr/games/scripts/*.sh && \
   ls -R "$WINEPREFIX/drive_c/POK" && \
@@ -55,10 +61,6 @@ RUN apt-get update && \
   mkdir -p "/usr/games/Steam/steamapps/common" && \
   find "/usr/games/Steam/steamapps/common" -maxdepth 0 -not -name "Steamworks Shared"
 
-# Switch to games user
-USER games
-# Set the working directory
-WORKDIR "/usr/games"
 
 # Install SteamCMD
 # RUN curl -sL https://steamcdn-a.akamaihd.net/client/installer/steamcmd.zip -o steamcmd.zip \
