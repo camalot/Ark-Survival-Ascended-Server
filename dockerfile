@@ -20,6 +20,7 @@ ENV ASA_DIR="$PROGRAM_FILES/Steam/steamapps/common/ARK Survival Ascended Dedicat
 USER root
 # Set the shell to use for running commands
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+WORKDIR "/usr/games"
 
 # Create required directories
 # Change user shell and set ownership
@@ -34,33 +35,29 @@ COPY scripts/ /usr/games/scripts/
 COPY defaults/ /usr/games/defaults/
 
 # hadolint ignore=DL3008
-RUN apt-get update && \
-  apt-get install --no-install-recommends --yes jq curl unzip nano bc cron && \
-  rm -rf /var/lib/apt/lists/* && \
-  curl -L "https://github.com/itzg/rcon-cli/releases/download/${RCON_CLI_VERSION}/rcon-cli_${RCON_CLI_VERSION}_linux_amd64.tar.gz" | tar xvz && \
-  mv rcon-cli /usr/local/bin/ && \
-  chmod +x /usr/local/bin/rcon-cli && \
-  curl -L "https://github.com/bitnami/ini-file/releases/download/v${INI_FILE_VERSION}/ini-file-linux-amd64.tar.gz" | tar xvz && \
-  mv ini-file-linux-amd64 /usr/local/bin/ini-file && \
-  chmod +x /usr/local/bin/ini-file
+RUN apt-get update \
+  && apt-get install --no-install-recommends --yes jq curl unzip nano bc cron \
+  && rm -rf /var/lib/apt/lists/* \
+  && curl -L "https://github.com/itzg/rcon-cli/releases/download/${RCON_CLI_VERSION}/rcon-cli_${RCON_CLI_VERSION}_linux_amd64.tar.gz" | tar xvz \
+  && mv rcon-cli /usr/local/bin/ \
+  && chmod +x /usr/local/bin/rcon-cli \
+  && curl -L "https://github.com/bitnami/ini-file/releases/download/v${INI_FILE_VERSION}/ini-file-linux-amd64.tar.gz" | tar xvz \
+  && mv ini-file-linux-amd64 /usr/local/bin/ini-file \
+  && chmod +x /usr/local/bin/ini-file \
+  && sed -i 's/\r//' /usr/games/scripts/*.sh \
+  && chmod +x /usr/games/scripts/*.sh
 
 USER games
-WORKDIR "/usr/games"
 
 RUN \
   curl -sL https://steamcdn-a.akamaihd.net/client/installer/steamcmd.zip -o steamcmd.zip \
   && unzip steamcmd.zip -d "$PROGRAM_FILES/Steam" \
-  && rm steamcmd.zip && \
-  chown -R games:games "/usr/games" && \
-  chown -R games:games "/usr/games/.wine" && \
-  chown -R games:games "$WINEPREFIX" && \
-  chmod +x /usr/games/scripts/*.sh && \
-  sed -i 's/\r//' /usr/games/scripts/*.sh && \
-  ls -R "$WINEPREFIX/drive_c/POK" && \
-  ln -s "$PROGRAM_FILES/Steam" "/usr/games/Steam" && \
-  mkdir -p "/usr/games/Steam/steamapps/common" && \
-  find "/usr/games/Steam/steamapps/common" -maxdepth 0 -not -name "Steamworks Shared"
-
+  && rm steamcmd.zip \
+  && ls -R "$WINEPREFIX/drive_c/POK" \
+  && ln -s "$PROGRAM_FILES/Steam" /usr/games/Steam \
+  && mkdir -p /usr/games/Steam/steamapps/common \
+  && find /usr/games/Steam/steamapps/common -maxdepth 0 -not -name "Steamworks Shared" \
+  && chown -R games:games "$WINEPREFIX"
 
 # Install SteamCMD
 # RUN curl -sL https://steamcdn-a.akamaihd.net/client/installer/steamcmd.zip -o steamcmd.zip \
