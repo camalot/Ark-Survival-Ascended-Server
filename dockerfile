@@ -66,3 +66,4 @@ RUN curl -sL https://steamcdn-a.akamaihd.net/client/installer/steamcmd.zip -o st
   && find /usr/games/Steam/steamapps/common -maxdepth 0 -not -name "Steamworks Shared" \
   && chown -R games:games "$WINEPREFIX"
 
+USER root
