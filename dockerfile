@@ -49,8 +49,6 @@ RUN apt-get update && \
   && rm steamcmd.zip && \
   chown -R games:games "$GAMES_HOME" && \
   chmod +x "$GAMES_HOME"/scripts/*.sh && \
-  chmod +x "$GAMES_HOME"/defaults/*.sh && \
-  sed -i 's/\r//' "$GAMES_HOME"/defaults/*.sh && \
   sed -i 's/\r//' "$GAMES_HOME"/scripts/*.sh && \
   ls -R "$WINEPREFIX/drive_c/POK" && \
   ln -s "$PROGRAM_FILES/Steam" "$GAMES_HOME/Steam" && \
