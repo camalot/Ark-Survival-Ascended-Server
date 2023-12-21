@@ -1,4 +1,5 @@
 # Use an image that has Wine installed to run Windows applications
+# hadolint ignore=DL3007
 FROM scottyhardy/docker-wine:latest
 
 # Add ARG for PUID and PGID with a default value
@@ -29,7 +30,7 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # hadolint ignore=DL3008
 RUN apt-get update && \
-  apt-get install -y jq curl unzip nano bc cron && \
+  apt-get install --no-install-recommends --yes --force-yes jq curl unzip nano bc cron && \
   rm -rf /var/lib/apt/lists/* && \
   curl -L https://github.com/itzg/rcon-cli/releases/download/1.6.3/rcon-cli_1.6.3_linux_amd64.tar.gz | tar xvz && \
   mv rcon-cli /usr/local/bin/ && \
