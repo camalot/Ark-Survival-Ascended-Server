@@ -2,63 +2,65 @@
 
 # RCON connection details
 RCON_HOST="localhost"
-RCON_PORT=${RCON_PORT}  # Default RCON port if not set in docker-compose
-RCON_PASSWORD=${SERVER_ADMIN_PASSWORD}  # Server admin password used as RCON password
+RCON_PORT="${RCON_PORT:-27020}"          # Default RCON port if not set in docker-compose
+RCON_PASSWORD="${SERVER_ADMIN_PASSWORD}" # Server admin password used as RCON password
 
 # Check if RCON_PORT and RCON_PASSWORD are set
 if [ -z "$RCON_PORT" ] || [ -z "$RCON_PASSWORD" ]; then
-    echo "RCON_PORT and SERVER_ADMIN_PASSWORD must be set."
-    exit 1
+  echo "RCON_PORT and SERVER_ADMIN_PASSWORD must be set."
+  exit 1
 fi
-
 
 # Function to send RCON command
 send_rcon_command() {
-    rcon-cli --host $RCON_HOST --port $RCON_PORT --password $RCON_PASSWORD "$1"
+  rcon-cli --host "$RCON_HOST" --port "$RCON_PORT" --password "$RCON_PASSWORD" "$1"
 }
 
 # Function for shutdown sequence
 initiate_restart() {
-    if [ -z "$1" ]; then
-        echo -n "Enter countdown duration in minutes: "
-        read duration_in_minutes
-        duration_in_minutes=${duration_in_minutes:-5}  # Default to 5 minutes if not specified
-    else
-        duration_in_minutes=$1
+  if [ -z "$1" ]; then
+    echo -n "Enter countdown duration in minutes: "
+    read -r duration_in_minutes
+    duration_in_minutes="${duration_in_minutes:-5}" # Default to 5 minutes if not specified
+  else
+    duration_in_minutes=$1
+  fi
+
+  local total_seconds
+  total_seconds=$((duration_in_minutes * 60))
+  local seconds_remaining
+  seconds_remaining="$total_seconds"
+
+  while [ $seconds_remaining -gt 0 ]; do
+    local minutes_remaining
+    minutes_remaining=$((seconds_remaining / 60))
+
+    if [ "$seconds_remaining" -le 10 ]; then
+      # Notify every second for the last 10 seconds
+      send_rcon_command "ServerChat Server restarting in $seconds_remaining second(s)"
+    elif [ $((seconds_remaining % 300)) -eq 0 ] || [ "$seconds_remaining" -eq "$total_seconds" ]; then
+      # Notify at 5 minute intervals
+      send_rcon_command "ServerChat Server restarting in $minutes_remaining minute(s)"
     fi
 
-    local total_seconds=$((duration_in_minutes * 60))
-    local seconds_remaining=$total_seconds
+    sleep 1
+    ((seconds_remaining--))
+  done
 
-    while [ $seconds_remaining -gt 0 ]; do
-        local minutes_remaining=$((seconds_remaining / 60))
-
-        if [ $seconds_remaining -le 10 ]; then
-            # Notify every second for the last 10 seconds
-            send_rcon_command "ServerChat Server restarting in $seconds_remaining second(s)"
-        elif [ $((seconds_remaining % 300)) -eq 0 ] || [ $seconds_remaining -eq $total_seconds ]; then
-            # Notify at 5 minute intervals
-            send_rcon_command "ServerChat Server restarting in $minutes_remaining minute(s)"
-        fi
-
-        sleep 1
-        ((seconds_remaining--))
-    done
-
-    send_rcon_command "saveworld"
-    echo "World saved. Restarting the server..."
-    send_rcon_command "DoExit"
+  send_rcon_command "saveworld"
+  echo "World saved. Restarting the server..."
+  send_rcon_command "DoExit"
 }
 
 # Handle automated restart or custom command if arguments are provided
 if [ "$1" == "-restart" ] && [ -n "$2" ]; then
-    echo "Automated restart initiated with a $2 minute countdown."
-    initiate_restart $2
-    exit 0
+  echo "Automated restart initiated with a $2 minute countdown."
+  initiate_restart "$2"
+  exit 0
 elif [ "$1" == "-custom" ] && [ -n "$2" ]; then
-    echo "Executing custom RCON command: $2"
-    send_rcon_command "$2"
-    exit 0
+  echo "Executing custom RCON command: $2"
+  send_rcon_command "$2"
+  exit 0
 fi
 
 # Interactive mode
@@ -76,35 +78,35 @@ echo ""
 
 # Main interface loop
 while true; do
-    echo -n "RCON> "
-    read command
+  echo -n "RCON> "
+  read -r command
 
-    case $command in
-        saveworld)
-            send_rcon_command "saveworld"
-            echo "World save command issued."
-            ;;
-        restart)
-            initiate_restart
-            ;;
-        chat)
-            echo -n "Enter your message: "
-            read message
-            send_rcon_command "ServerChat $message"
-            echo "Message sent to the server."
-            ;;
-        custom)
-            echo -n "Enter custom RCON command: "
-            read custom_command
-            send_rcon_command "$custom_command"
-            ;;
-        exit)
-            break
-            ;;
-        *)
-            echo "Unknown command. Please try again."
-            ;;
-    esac
+  case $command in
+  saveworld)
+    send_rcon_command "saveworld"
+    echo "World save command issued."
+    ;;
+  restart)
+    initiate_restart
+    ;;
+  chat)
+    echo -n "Enter your message: "
+    read -r message
+    send_rcon_command "ServerChat $message"
+    echo "Message sent to the server."
+    ;;
+  custom)
+    echo -n "Enter custom RCON command: "
+    read -r custom_command
+    send_rcon_command "$custom_command"
+    ;;
+  exit)
+    break
+    ;;
+  *)
+    echo "Unknown command. Please try again."
+    ;;
+  esac
 done
 
 echo "Exiting RCON interface."

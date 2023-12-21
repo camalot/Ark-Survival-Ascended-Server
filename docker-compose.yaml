@@ -11,7 +11,7 @@ services:
       - PGID=1001                            # The GID to run server as
       - BATTLEEYE=FALSE                      # Set to TRUE to use BattleEye, FALSE to not use BattleEye
       - RCON_ENABLED=TRUE                    # Needed for Graceful Shutdown / Updates / Server Notifications
-      - DISPLAY_POK_MONITOR_MESSAGE=TRUE     # Or FALSE to suppress the Server Monitor / Update Monitor 
+      - DISPLAY_POK_MONITOR_MESSAGE=TRUE     # Or FALSE to suppress the Server Monitor / Update Monitor
       - UPDATE_SERVER=TRUE                   # Enable or disable update checks
       - CHECK_FOR_UPDATE_INTERVAL=24         # Check for Updates interval in hours
       - RESTART_NOTICE_MINUTES=30            # Duration in minutes for notifying players before a server restart due to updates
@@ -31,8 +31,12 @@ services:
     ports:
       - "7777:7777/tcp"
       - "7777:7777/udp"
+      - "27015:27015/tcp"
+      - "27015:27015/udp"
+      - "27016:27016/tcp"
+      - "27016:27016/udp"
     volumes:
       - "./ASA:/usr/games/.wine/drive_c/POK/Steam/steamapps/common/ARK Survival Ascended Dedicated Server/ShooterGame"
       - "./ARK Survival Ascended Dedicated Server:/usr/games/.wine/drive_c/POK/Steam/steamapps/common/ARK Survival Ascended Dedicated Server"
       - "./Cluster:/usr/games/.wine/drive_c/POK/Steam/steamapps/common/ShooterGame"
-    mem_limit: 16G 
+    mem_limit: 16G
