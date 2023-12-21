@@ -5,7 +5,7 @@
 
 This Docker image is designed to run a dedicated server for the game Ark Survival Ascended. It's based on `scottyhardy/docker-wine` to enable the running of Windows applications. The image uses a bash script to handle startup, server installation, server update ,and setting up environment variables.
 
-### [Docker Hub Repository](https://hub.docker.com/r/acekorneya/asa_server) 
+### [Docker Hub Repository](https://hub.docker.com/r/acekorneya/asa_server)
 
 ---
 
@@ -81,7 +81,7 @@ When you run the docker compose up it should create this folders in the same fol
 
 #### Docker Compose
 
-Create a `docker-compose.yaml` file and populate it with the service definition. 
+Create a `docker-compose.yaml` file and populate it with the service definition.
 
 ``` yaml
 version: '2.4'
@@ -134,30 +134,30 @@ sudo docker compose up
 
 ---
 
-### Additional server settings 
+### Additional server settings
 
 Advanced Config
 For custom settings, edit GameUserSettings.ini in ASA/Saved/Config/WindowsServer. Modify and restart the container.
 
 ---
 ## Temp Fix
-IF you see this at the end of you logs 
+IF you see this at the end of you logs
 ``` shell
 asa_pve_Server | [2023.11.06-03.55.48:449][  1]Allocator Stats for binned2 are not in this build set BINNED2_ALLOCATOR_STATS 1 in MallocBinned2.cpp
 ```
-you need to run this command first 
+you need to run this command first
 ``` shell
 sysctl -w vm.max_map_count=262144
 ```
-if you want to make it perment 
+if you want to make it permanent
 ``` shell
 sudo -s echo "vm.max_map_count=262144" >> /etc/sysctl.conf && sysctl -p
 ```
 ## Hypervisors
-If you are using Proxmox as your virtual host make sure to set the CPU Type to "host" in your VM elsewise you'll get errors with the server.
+If you are using Proxmox as your virtual host make sure to set the CPU Type to "host" in your VM otherwise you'll get errors with the server.
 
 ### SERVER_MANAGER
-If you want to run Rcon_manager.sh download it just place it in the same folder as your docker-compose.yaml make it executable and launch it..
+If you want to run rcon_manager.sh download it just place it in the same folder as your docker-compose.yaml make it executable and launch it.
 
 you can also do automatic restart with CronJobs example below
 
@@ -169,7 +169,7 @@ this will schedule a restart every day at 3 AM with a 10-minute countdown
 ### UPDATING DOCKER IMAGE
 Open a terminal or command prompt.
 
-remove old docker image 
+remove old docker image
 ``` shell
 docker rmi acekorneya/asa_server:latest
 ```
@@ -179,11 +179,11 @@ docker pull acekorneya/asa_server:latest
 ```
 Restart the Docker Container
 
-First, bring down your current container with 
+First, bring down your current container with
 ``` shell
 docker-compose down
 ```
-Then, start it again using 
+Then, start it again using
 ``` shell
 docker-compose up
 ```

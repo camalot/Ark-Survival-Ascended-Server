@@ -2,8 +2,8 @@
 
 # RCON connection details
 RCON_HOST="localhost"
-RCON_PORT="${RCON_PORT:-27020}"  # Default RCON port if not set in docker-compose
-RCON_PASSWORD="${SERVER_ADMIN_PASSWORD}"  # Server admin password used as RCON password
+RCON_PORT="${RCON_PORT:-27020}"          # Default RCON port if not set in docker-compose
+RCON_PASSWORD="${SERVER_ADMIN_PASSWORD}" # Server admin password used as RCON password
 
 # Check if RCON_PORT and RCON_PASSWORD are set
 if [ -z "$RCON_PORT" ] || [ -z "$RCON_PASSWORD" ]; then
@@ -32,7 +32,7 @@ initiate_restart() {
   seconds_remaining="$total_seconds"
 
   while [ $seconds_remaining -gt 0 ]; do
-    local minutes_remaining;
+    local minutes_remaining
     minutes_remaining=$((seconds_remaining / 60))
 
     if [ "$seconds_remaining" -le 10 ]; then
