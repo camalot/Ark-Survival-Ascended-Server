@@ -2,13 +2,13 @@
 
 PID_FILE="/usr/games/ark_server.pid"
 LAUNCH_SCRIPT="/usr/games/scripts/launch_ASA.sh"
-INITIAL_STARTUP_DELAY=120  # Delay in seconds before starting the monitoring
+INITIAL_STARTUP_DELAY=120 # Delay in seconds before starting the monitoring
 
 # RCON configuration
 RCON_HOST="localhost"
 RCON_PORT="${RCON_PORT:-27020}"
 RCON_PASSWORD="${SERVER_ADMIN_PASSWORD}"
-RESTART_NOTICE_MINUTES="${RESTART_NOTICE_MINUTES:-30}"  # Default to 30 minutes if not set
+RESTART_NOTICE_MINUTES="${RESTART_NOTICE_MINUTES:-30}" # Default to 30 minutes if not set
 
 # Send RCON command
 send_rcon_command() {
@@ -17,7 +17,7 @@ send_rcon_command() {
 
 # Notify players with improved countdown logic
 notify_players_for_restart() {
-  local minutes_remaining;
+  local minutes_remaining
   minutes_remaining=$RESTART_NOTICE_MINUTES
   while [ "$minutes_remaining" -gt 0 ]; do
     if [ "$minutes_remaining" -le 1 ]; then
@@ -34,7 +34,7 @@ notify_players_for_restart() {
   done
 
   # Final 60 seconds countdown, sending a notification every second
-  local seconds_remaining;
+  local seconds_remaining
   seconds_remaining=60
   while [ "$seconds_remaining" -gt 0 ]; do
     if [ "$seconds_remaining" -le 10 ]; then
@@ -51,9 +51,9 @@ notify_players_for_restart() {
 # Function to check if the server process is running
 is_process_running() {
   if [ -f "$PID_FILE" ]; then
-    local pid;
+    local pid
     pid=$(cat "$PID_FILE")
-    if ps -p "$pid" > /dev/null 2>&1; then
+    if ps -p "$pid" >/dev/null 2>&1; then
       if [ "${DISPLAY_POK_MONITOR_MESSAGE}" = "TRUE" ]; then
         echo "ARK server process (PID: $pid) is running."
       fi
@@ -63,8 +63,8 @@ is_process_running() {
       return 1
     fi
   else
-      echo "PID file not found."
-      return 1
+    echo "PID file not found."
+    return 1
   fi
 }
 
@@ -97,9 +97,9 @@ sleep $INITIAL_STARTUP_DELAY
 while true; do
   # Check if the server is currently updating (based on the presence of the updating.flag file)
   if [ -f "/usr/games/updating.flag" ]; then
-      echo "Update/Installation in progress, waiting for it to complete..."
-      sleep 60
-      continue  # Skip the rest of this loop iteration
+    echo "Update/Installation in progress, waiting for it to complete..."
+    sleep 60
+    continue # Skip the rest of this loop iteration
   fi
 
   if [ "${UPDATE_SERVER,,}" = "true" ]; then
@@ -108,7 +108,7 @@ while true; do
     last_update_check_time=${last_update_check_time:-0}
     update_check_interval_seconds=$((CHECK_FOR_UPDATE_INTERVAL * 3600))
 
-    if (( current_time - last_update_check_time > update_check_interval_seconds )); then
+    if ((current_time - last_update_check_time > update_check_interval_seconds)); then
       if /usr/games/scripts/POK_Update_Monitor.sh; then
         notify_players_for_restart
         restart_server
@@ -122,5 +122,5 @@ while true; do
     restart_server
   fi
 
-  sleep 60  # Short sleep to prevent high CPU usage
+  sleep 60 # Short sleep to prevent high CPU usage
 done

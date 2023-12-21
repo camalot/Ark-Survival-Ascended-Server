@@ -11,7 +11,6 @@ if [ -z "$RCON_PORT" ] || [ -z "$RCON_PASSWORD" ]; then
   exit 1
 fi
 
-
 # Function to send RCON command
 send_rcon_command() {
   rcon-cli --host "$RCON_HOST" --port "$RCON_PORT" --password "$RCON_PASSWORD" "$1"
@@ -22,14 +21,14 @@ initiate_restart() {
   if [ -z "$1" ]; then
     echo -n "Enter countdown duration in minutes: "
     read -r duration_in_minutes
-    duration_in_minutes="${duration_in_minutes:-5}"  # Default to 5 minutes if not specified
+    duration_in_minutes="${duration_in_minutes:-5}" # Default to 5 minutes if not specified
   else
     duration_in_minutes=$1
   fi
 
-  local total_seconds;
+  local total_seconds
   total_seconds=$((duration_in_minutes * 60))
-  local seconds_remaining;
+  local seconds_remaining
   seconds_remaining="$total_seconds"
 
   while [ $seconds_remaining -gt 0 ]; do
@@ -83,30 +82,30 @@ while true; do
   read -r command
 
   case $command in
-    saveworld)
-      send_rcon_command "saveworld"
-      echo "World save command issued."
-      ;;
-    restart)
-      initiate_restart
-      ;;
-    chat)
-      echo -n "Enter your message: "
-      read -r message
-      send_rcon_command "ServerChat $message"
-      echo "Message sent to the server."
-      ;;
-    custom)
-      echo -n "Enter custom RCON command: "
-      read -r custom_command
-      send_rcon_command "$custom_command"
-      ;;
-    exit)
-      break
-      ;;
-    *)
-      echo "Unknown command. Please try again."
-      ;;
+  saveworld)
+    send_rcon_command "saveworld"
+    echo "World save command issued."
+    ;;
+  restart)
+    initiate_restart
+    ;;
+  chat)
+    echo -n "Enter your message: "
+    read -r message
+    send_rcon_command "ServerChat $message"
+    echo "Message sent to the server."
+    ;;
+  custom)
+    echo -n "Enter custom RCON command: "
+    read -r custom_command
+    send_rcon_command "$custom_command"
+    ;;
+  exit)
+    break
+    ;;
+  *)
+    echo "Unknown command. Please try again."
+    ;;
   esac
 done
 

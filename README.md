@@ -1,15 +1,15 @@
 
 # Documentation for Ark Survival Ascended Server Docker Image
 
-#### Docker Image Details
+## Docker Image Details
 
 This Docker image is designed to run a dedicated server for the game Ark Survival Ascended. It's based on `scottyhardy/docker-wine` to enable the running of Windows applications. The image uses a bash script to handle startup, server installation, server update ,and setting up environment variables.
 
-#### [Docker Hub Repository](https://hub.docker.com/r/acekorneya/asa_server) 
+### [Docker Hub Repository](https://hub.docker.com/r/acekorneya/asa_server) 
 
 ---
 
-#### Environment Variables
+### Environment Variables
 
 | Variable                      | Default           | Description                                                                               |
 | ------------------------------| ------------------| ------------------------------------------------------------------------------------------|
@@ -41,7 +41,7 @@ This Docker image is designed to run a dedicated server for the game Ark Surviva
 
 ---
 
-#### Additional Information
+### Additional Information
 
 - **PUID and PGID**: These are important for setting the permissions of the folders that Docker will use. Make sure to set these values based on your host machine's user and group ID
 
@@ -49,7 +49,7 @@ This Docker image is designed to run a dedicated server for the game Ark Surviva
 
 ---
 
-#### Ports
+### Ports
 
 | Port         | Description                            |
 | ------------ | -------------------------------------- |
@@ -58,7 +58,7 @@ This Docker image is designed to run a dedicated server for the game Ark Surviva
 
 ---
 
-#### Volumes
+### Volumes
 When you run the docker compose up it should create this folders in the same folder as the docker-compose.yaml file unless changed by the user
 
 | Volume Path                                          | Description                                   |
@@ -69,7 +69,7 @@ When you run the docker compose up it should create this folders in the same fol
 
 ---
 
-#### Recommended System Requirements
+### Recommended System Requirements
 
 - CPU: min 2 CPUs
 - RAM: > 16 GB
@@ -77,9 +77,9 @@ When you run the docker compose up it should create this folders in the same fol
 
 ---
 
-#### Usage
+### Usage
 
-##### Docker Compose
+#### Docker Compose
 
 Create a `docker-compose.yaml` file and populate it with the service definition. 
 
@@ -134,13 +134,13 @@ sudo docker compose up
 
 ---
 
-#### Additional server settings 
+### Additional server settings 
 
 Advanced Config
 For custom settings, edit GameUserSettings.ini in ASA/Saved/Config/WindowsServer. Modify and restart the container.
 
 ---
-### Temp Fix ###
+## Temp Fix
 IF you see this at the end of you logs 
 ``` shell
 asa_pve_Server | [2023.11.06-03.55.48:449][  1]Allocator Stats for binned2 are not in this build set BINNED2_ALLOCATOR_STATS 1 in MallocBinned2.cpp
@@ -153,10 +153,10 @@ if you want to make it perment
 ``` shell
 sudo -s echo "vm.max_map_count=262144" >> /etc/sysctl.conf && sysctl -p
 ```
-### Hypervisors
+## Hypervisors
 If you are using Proxmox as your virtual host make sure to set the CPU Type to "host" in your VM elsewise you'll get errors with the server.
 
-#### SERVER_MANAGER
+### SERVER_MANAGER
 If you want to run Rcon_manager.sh download it just place it in the same folder as your docker-compose.yaml make it executable and launch it..
 
 you can also do automatic restart with CronJobs example below
@@ -166,7 +166,7 @@ you can also do automatic restart with CronJobs example below
 ```
 this will schedule a restart every day at 3 AM with a 10-minute countdown
 
-#### UPDATING DOCKER IMAGE
+### UPDATING DOCKER IMAGE
 Open a terminal or command prompt.
 
 remove old docker image 
