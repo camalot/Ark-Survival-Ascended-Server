@@ -43,10 +43,10 @@ COPY defaults/ /usr/games/defaults/
 RUN apt-get update \
   && apt-get install --no-install-recommends --yes jq curl unzip nano bc cron \
   && rm -rf /var/lib/apt/lists/* \
-  && curl -L https://github.com/itzg/rcon-cli/releases/download/1.6.3/rcon-cli_1.6.3_linux_amd64.tar.gz | tar xvz \
+  && curl -L https://github.com/itzg/rcon-cli/releases/download/${RCON_CLI_VERSION}/rcon-cli_${RCON_CLI_VERSION}_linux_amd64.tar.gz | tar xvz \
   && mv rcon-cli /usr/local/bin/ \
   && chmod +x /usr/local/bin/rcon-cli \
-  && curl -L "https://github.com/bitnami/ini-file/releases/download/v1.4.6/ini-file-linux-amd64.tar.gz" | tar xvz \
+  && curl -L "https://github.com/bitnami/ini-file/releases/download/v${INI_FILE_VERSION}/ini-file-linux-amd64.tar.gz" | tar xvz \
   && mv ini-file-linux-amd64 /usr/local/bin/ini-file \
   && chmod +x /usr/local/bin/ini-file \
   && sed -i 's/\r//' /usr/games/scripts/*.sh \
@@ -66,4 +66,6 @@ RUN curl -sL https://steamcdn-a.akamaihd.net/client/installer/steamcmd.zip -o st
   && find /usr/games/Steam/steamapps/common -maxdepth 0 -not -name "Steamworks Shared" \
   && chown -R games:games "$WINEPREFIX"
 
+# NEED TO FIND A WAY TO NOT HAVE TO RUN THIS AS ROOT
+# hadolint ignore=DL3002
 USER root

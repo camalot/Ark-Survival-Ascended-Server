@@ -6,6 +6,7 @@ load_env() {
   if [ -f "$ENV_FILE" ]; then
     echo "Loading environment variables from $ENV_FILE"
     set -o allexport
+    # shellcheck disable=SC1090
     source "$ENV_FILE"
     set +o allexport
   else
