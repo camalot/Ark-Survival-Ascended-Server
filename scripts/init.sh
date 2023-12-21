@@ -14,8 +14,10 @@ PGID=${PGID:-1001}
 
 # Function to check if vm.max_map_count is set to a sufficient value
 check_vm_max_map_count() {
-    local required_map_count=262144
-    local current_map_count=$(cat /proc/sys/vm/max_map_count)
+    local required_map_count;
+    required_map_count=262144
+    local current_map_count;
+    current_map_count=$(cat /proc/sys/vm/max_map_count)
 
     if [ "$current_map_count" -lt "$required_map_count" ]; then
         echo "ERROR: The vm.max_map_count on the host system is too low ($current_map_count) and needs to be at least $required_map_count."
@@ -32,8 +34,8 @@ check_vm_max_map_count() {
 check_vm_max_map_count
 
 # Fix games user uid & gid then re set the owner of wine folders
-groupmod -o -g $PGID games
-usermod -o -u $PUID -g games games
+groupmod -o -g "$PGID" games
+usermod -o -u "$PUID" -g games games
 chown -R games:games "$WINEPREFIX"
 
 # Create directories if they do not exist and set permissions
@@ -41,7 +43,7 @@ for DIR in "$ASA_DIR" "$ARK_DIR" "$CLUSTER_DIR" "$SAVED_DIR" "$CONFIG_DIR" "$WIN
     if [ ! -d "$DIR" ]; then
         mkdir -p "$DIR"
     fi
-    chown -R $PUID:$PGID "$DIR"
+    chown -R "$PUID":"$PGID" "$DIR"
     chmod -R 755 "$DIR"
 done
 
@@ -57,7 +59,7 @@ copy_default_configs() {
     # Copy Game.ini if it does not exist
     if [ ! -f "${WINDOWS_SERVER_DIR}/Game.ini" ]; then
         cp /usr/games/defaults/Game.ini "$WINDOWS_SERVER_DIR"
-        chown $PUID:$PGID "${WINDOWS_SERVER_DIR}/Game.ini"
+        chown "$PUID":"$PGID" "${WINDOWS_SERVER_DIR}/Game.ini"
         chmod 755 "${WINDOWS_SERVER_DIR}/Game.ini"
     fi
 }

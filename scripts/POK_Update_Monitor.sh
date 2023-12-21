@@ -2,14 +2,16 @@
 
 # Define necessary variables
 ASA_DIR="/usr/games/.wine/drive_c/POK/Steam/steamapps/common/ARK Survival Ascended Dedicated Server/ShooterGame"
-APPID=2430930  
+APPID=2430930
 
 
 # Function to get the build ID from the appmanifest.acf file
 get_build_id_from_acf() {
-    local acf_file="$ASA_DIR/appmanifest_$APPID.acf"
+    local acf_file
+    acf_file="$ASA_DIR/appmanifest_$APPID.acf"
     if [[ -f "$acf_file" ]]; then
-        local build_id=$(grep -E "^\s+\"buildid\"\s+" "$acf_file" | grep -o '[[:digit:]]*')
+        local build_id
+        build_id=$(grep -E "^\s+\"buildid\"\s+" "$acf_file" | grep -o '[[:digit:]]*')
         echo "$build_id"
     else
         echo ""
@@ -18,7 +20,8 @@ get_build_id_from_acf() {
 
 # Function to get the current build ID from SteamCMD API
 get_current_build_id() {
-    local build_id=$(curl -sX GET "https://api.steamcmd.net/v1/info/$APPID" | jq -r ".data.\"$APPID\".depots.branches.public.buildid")
+    local build_id
+    build_id=$(curl -sX GET "https://api.steamcmd.net/v1/info/$APPID" | jq -r ".data.\"$APPID\".depots.branches.public.buildid")
     echo "$build_id"
 }
 

@@ -17,7 +17,8 @@ send_rcon_command() {
 
 # Notify players with improved countdown logic
 notify_players_for_restart() {
-    local minutes_remaining=$RESTART_NOTICE_MINUTES
+    local minutes_remaining;
+    minutes_remaining=$RESTART_NOTICE_MINUTES
     while [ $minutes_remaining -gt 0 ]; do
         if [ $minutes_remaining -le 1 ]; then
             # When only 1 minute or less is remaining, start the final countdown
@@ -33,7 +34,8 @@ notify_players_for_restart() {
     done
 
     # Final 60 seconds countdown, sending a notification every second
-    local seconds_remaining=60
+    local seconds_remaining;
+    seconds_remaining=60
     while [ $seconds_remaining -gt 0 ]; do
         if [ $seconds_remaining -le 10 ]; then
             # Notify every second for the last 10 seconds
@@ -49,8 +51,9 @@ notify_players_for_restart() {
 # Function to check if the server process is running
 is_process_running() {
     if [ -f "$PID_FILE" ]; then
-        local pid=$(cat "$PID_FILE")
-        if ps -p $pid > /dev/null 2>&1; then
+        local pid;
+        pid=$(cat "$PID_FILE")
+        if ps -p "$pid" > /dev/null 2>&1; then
             if [ "${DISPLAY_POK_MONITOR_MESSAGE}" = "TRUE" ]; then
                 echo "ARK server process (PID: $pid) is running."
             fi

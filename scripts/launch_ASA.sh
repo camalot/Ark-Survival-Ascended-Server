@@ -8,8 +8,8 @@ initialize_variables() {
   ASA_DIR="/usr/games/.wine/drive_c/POK/Steam/steamapps/common/ARK Survival Ascended Dedicated Server/ShooterGame"
   CLUSTER_DIR="$ASA_DIR/Cluster"
   CLUSTER_DIR_OVERRIDE="$CLUSTER_DIR"
-  SOURCE_DIR="/usr/games/.wine/drive_c/POK/Steam/steamapps/common/ARK Survival Ascended Dedicated Server/"
-  DEST_DIR="$ASA_DIR/Binaries/Win64/"
+  # SOURCE_DIR="/usr/games/.wine/drive_c/POK/Steam/steamapps/common/ARK Survival Ascended Dedicated Server/"
+  # DEST_DIR="$ASA_DIR/Binaries/Win64/"
   PERSISTENT_ACF_FILE="$ASA_DIR/appmanifest_$APPID.acf"
 
   # Clean and format MOD_IDS if it's set
@@ -208,7 +208,8 @@ initialize_variables() {
 }
 
 is_url() {
-  local var_name="$1"
+  local var_name;
+  var_name="$1"
 
   # validate that the value is a URL
   if [ -n "$var_name" ]; then
@@ -223,8 +224,10 @@ is_url() {
 }
 
 get_bool() {
-  local var_name="$1"
-  local default_value="$2"
+  local var_name;
+  var_name="$1"
+  local default_value;
+  default_value="$2"
 
   if [ -n "$var_name" ]; then
     local value="${!var_name,,-"${default_value,,}"}"
@@ -241,13 +244,17 @@ get_bool() {
 }
 
 is_numeric() {
-  local var_name="$1"
-  local min=""
-  local max=""
+  local var_name;
+  var_name="$1"
+  local min;
+  min=""
+  local max;
+  max=""
 
   # validate that the value is a number
   if [ -n "$var_name" ]; then
-    local value="${!var_name}"
+    local value;
+    value="${!var_name}"
     if [ -n "$value" ]; then
       if ! [[ "$value" =~ ^-?[0-9]+(\.[0-9]+)?$ ]]; then
         echo "ERROR: The $var_name must be a number."
@@ -271,8 +278,10 @@ is_numeric() {
 
 
 update_ini_settings() {
-  local gus_ini="$ASA_DIR/Saved/Config/WindowsServer/GameUserSettings.ini"
-  local game_ini="$ASA_DIR/Saved/Config/WindowsServer/Game.ini"
+  local gus_ini;
+  gus_ini="$ASA_DIR/Saved/Config/WindowsServer/GameUserSettings.ini"
+  local game_ini;
+  game_ini="$ASA_DIR/Saved/Config/WindowsServer/Game.ini"
 
   # [ServerSettings]
   update_ini_setting "$gus_ini" "ServerSettings" "ServerAdminPassword" "$SERVER_ADMIN_PASSWORD"
@@ -343,7 +352,8 @@ update_ini_settings() {
     # Handle MOTD based on ENABLE_MOTD value
     if [ "${ENABLE_MOTD,,}" = "true" ]; then
       # Prepare MOTD by escaping newline characters
-      local escaped_motd=$(echo "$MOTD" | sed 's/\\n/\\\\n/g')
+      local escaped_motd;
+      escaped_motd=$(echo "$MOTD" | sed 's/\\n/\\\\n/g')
       update_ini_setting "$gus_ini" "MessageOfTheDay" "Message" "$escaped_motd"
       update_ini_setting "$gus_ini" "MessageOfTheDay" "Duration" "$MOTD_DURATION"
     else
@@ -383,10 +393,14 @@ update_ini_settings() {
 }
 
 update_ini_setting_quote() {
-  local ini_file="$1"
-  local section="$2"
-  local setting="$3"
-  local value="$4"
+  local ini_file;
+  ini_file="$1"
+  local section;
+  section="$2"
+  local setting;
+  setting="$3"
+  local value;
+  value="$4"
 
   # Check if the file exists
   if [ -f "$ini_file" ]; then
@@ -403,10 +417,14 @@ update_ini_setting_quote() {
 
 
 update_ini_setting() {
-  local ini_file="$1"
-  local section="$2"
-  local setting="$3"
-  local value="$4"
+  local ini_file;
+  ini_file="$1"
+  local section;
+  section="$2"
+  local setting;
+  setting="$3"
+  local value;
+  value="$4"
 
   # Check if the file exists
   if [ -f "$ini_file" ]; then
@@ -453,7 +471,8 @@ determine_map_path() {
 # Get the build ID from the appmanifest.acf file
 get_build_id_from_acf() {
   if [[ -f "$PERSISTENT_ACF_FILE" ]]; then
-    local build_id=$(grep -E "^\s+\"buildid\"\s+" "$PERSISTENT_ACF_FILE" | grep -o '[[:digit:]]*')
+    local build_id;
+    build_id=$(grep -E "^\s+\"buildid\"\s+" "$PERSISTENT_ACF_FILE" | grep -o '[[:digit:]]*')
     echo "$build_id"
   else
     echo ""
@@ -462,13 +481,16 @@ get_build_id_from_acf() {
 
 # Get the current build ID from SteamCMD API
 get_current_build_id() {
-  local build_id=$(curl -sX GET "https://api.steamcmd.net/v1/info/$APPID" | jq -r ".data.\"$APPID\".depots.branches.public.buildid")
+  local build_id;
+  build_id=$(curl -sX GET "https://api.steamcmd.net/v1/info/$APPID" | jq -r ".data.\"$APPID\".depots.branches.public.buildid")
   echo "$build_id"
 }
 
 install_server() {
-  local saved_build_id=$(get_build_id_from_acf)
-  local current_build_id=$(get_current_build_id)
+  local saved_build_id;
+  saved_build_id=$(get_build_id_from_acf)
+  local current_build_id;
+  current_build_id=$(get_current_build_id)
 
   if [ -z "$saved_build_id" ] || [ "$saved_build_id" != "$current_build_id" ]; then
     echo "New server installation or update required..."
@@ -485,8 +507,10 @@ install_server() {
 }
 
 update_server() {
-  local saved_build_id=$(get_build_id_from_acf)
-  local current_build_id=$(get_current_build_id)
+  local saved_build_id;
+  saved_build_id=$(get_build_id_from_acf)
+  local current_build_id;
+  current_build_id=$(get_current_build_id)
 
   if [ -z "$saved_build_id" ] || [ "$saved_build_id" != "$current_build_id" ]; then
     echo "Server update detected..."
@@ -504,7 +528,8 @@ update_server() {
 
 # Function to check if save is complete
 save_complete_check() {
-  local log_file="$ASA_DIR/Saved/Logs/ShooterGame.log"
+  local log_file;
+  log_file="$ASA_DIR/Saved/Logs/ShooterGame.log"
   # Check if the "World Save Complete" message is in the log file
   if tail -n 10 "$log_file" | grep -q "World Save Complete"; then
     echo "Save operation completed."
@@ -550,16 +575,21 @@ find_new_log_entries() {
 
 start_server() {
   # Check if the log file exists and rename it to archive
-  local old_log_file="$ASA_DIR/Saved/Logs/ShooterGame.log"
+  local old_log_file;
+  old_log_file="$ASA_DIR/Saved/Logs/ShooterGame.log"
   if [ -f "$old_log_file" ]; then
-    local timestamp=$(date +%F-%T)
+    local timestamp;
+    timestamp=$(date +%F-%T)
     mv "$old_log_file" "${old_log_file}_$timestamp.log"
   fi
 
   # Initialize the mods argument to an empty string
-  local mods_arg=""
-  local battleye_arg=""
-  local custom_args=""
+  local mods_arg;
+  mods_arg=""
+  local battleye_arg;
+  battleye_arg=""
+  local custom_args;
+  custom_args=""
 
   # Check if MOD_IDS is set and not empty
   if [ -n "$MOD_IDS" ]; then
@@ -635,8 +665,10 @@ start_server() {
   echo "PID $SERVER_PID written to /usr/games/ark_server.pid"
 
   # Wait for the log file to be created with a timeout
-  local LOG_FILE="$ASA_DIR/Saved/Logs/ShooterGame.log"
-  local TIMEOUT=120
+  local LOG_FILE;
+  LOG_FILE="$ASA_DIR/Saved/Logs/ShooterGame.log"
+  local TIMEOUT;
+  TIMEOUT=120
   while [[ ! -f "$LOG_FILE" && $TIMEOUT -gt 0 ]]; do
     sleep 1
     ((TIMEOUT--))
@@ -647,11 +679,13 @@ start_server() {
   fi
 
   # Find the line to start tailing from
-  local START_LINE=$(find_new_log_entries)
+  local START_LINE;
+  START_LINE=$(find_new_log_entries)
 
   # Tail the ShooterGame log file starting from the new session entries
   tail -n +"$START_LINE" -f "$LOG_FILE" &
-  local TAIL_PID=$!
+  local TAIL_PID;
+  TAIL_PID=$!
 
   # Wait for the server to fully start
   echo "Waiting for server to start..."
