@@ -56,11 +56,10 @@ RUN curl -sL https://steamcdn-a.akamaihd.net/client/installer/steamcmd.zip -o st
 RUN ls -R "$WINEPREFIX/drive_c/POK" && \
   ln -s "$PROGRAM_FILES/Steam" /usr/games/Steam && \
   mkdir -p /usr/games/Steam/steamapps/common && \
-  find /usr/games/Steam/steamapps/common -maxdepth 0 -not -name "Steamworks Shared" \
-  chown -R games:games "$WINEPREFIX"
+  find /usr/games/Steam/steamapps/common -maxdepth 0 -not -name "Steamworks Shared"
 
 # Explicitly set the ownership of WINEPREFIX directory to games
-# RUN chown -R games:games "$WINEPREFIX"
+RUN chown -R games:games "$WINEPREFIX"
 
 # Switch back to root for final steps
 USER root
