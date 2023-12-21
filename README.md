@@ -7,6 +7,10 @@ This Docker image is designed to run a dedicated server for the game Ark Surviva
 
 ### [Docker Hub Repository](https://hub.docker.com/r/acekorneya/asa_server)
 
+<!-- add github markdown note -->
+> [!NOTE]
+> This is the docker hub for the original docker image this is based off of. The container for this project is in the `packages` on the right hand side
+
 ---
 
 ### Environment Variables
