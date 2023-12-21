@@ -29,6 +29,10 @@ RUN mkdir -p "$PROGRAM_FILES" \
 # Install jq, curl, and dependencies for rcon-cli
 USER root
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+# Set the entry point to Supervisord
+ENTRYPOINT ["/usr/games/scripts/init.sh"]
+HEALTHCHECK --interval=60s --timeout=30s --start-period=60s --retries=3 CMD [ "/usr/games/scripts/healthcheck.sh" ]
+
 
 # Copy scripts folder into the container
 COPY scripts/ /usr/games/scripts/
@@ -62,10 +66,3 @@ RUN curl -sL https://steamcdn-a.akamaihd.net/client/installer/steamcmd.zip -o st
   && find /usr/games/Steam/steamapps/common -maxdepth 0 -not -name "Steamworks Shared" \
   && chown -R games:games "$WINEPREFIX"
 
-
-USER games
-
-# Set the entry point to Supervisord
-ENTRYPOINT ["/usr/games/scripts/init.sh"]
-
-HEALTHCHECK --interval=60s --timeout=30s --start-period=60s --retries=3 CMD [ "/usr/games/scripts/healthcheck.sh" ]
