@@ -2,7 +2,7 @@
 # Documentation for Ark Survival Ascended Server Docker Image
 
 > [!NOTE]
-> This project was originally based on [Acekorneya/Ark-Survival-Ascended-Server](https://github.com/Acekorneya/Ark-Survival-Ascended-Server). 
+> This project was originally based on [Acekorneya/Ark-Survival-Ascended-Server](https://github.com/Acekorneya/Ark-Survival-Ascended-Server).
 
 ## Docker Image Details
 
@@ -66,14 +66,14 @@ This Docker image is designed to run a dedicated server for the game Ark Surviva
 | `PREVENT_UPLOAD_ITEMS`        |                   |                                                                                           |
 | `PREVENT_UPLOAD_DINOS`        |                   |                                                                                           |
 | `ENABLE_WHITELIST`            |                   | Only allow whitelisted users to connect to the server.                                    |
-| `WHITELIST_URL`               |                   | An `http` url to content that returns user IDs (EOS format)                               |
-| `WHITELIST_PULL_INTERVAL`     | `5`               | The interval, in minutes, on how often the list should be pulled from the url.            |
+| `WHITELIST_URL`               |                   | An `http` URL to content that returns user IDs (EOS format)                               |
+| `WHITELIST_PULL_INTERVAL`     | `5`               | The interval, in minutes, on how often the list should be pulled from the URL.            |
 | `ENABLE_NO_CHECK_LIST`        |                   | Allow users on list to connect even if the server is full.                                |
-| `NO_CHECK_LIST_URL`           |                   | An `http` url to content that returns user IDs (EOS format)                               |
-| `NO_CHECK_LIST_PULL_INTERVAL` | `5`               | The interval, in minutes, on how often the list should be pulled from the url.            |
-| `ALLOW_CHEATERS_URL`          |                   | Admin List: An `http` url to content that returns user IDs (EOS format)                   |
-| `ALLOW_CHEATERS_UPDATE_INTERVAL` |                | The interval, in minutes, on how often the list should be pulled from the url.            |
-| `BAN_LIST_URL`                |                   | Ban List: An `http` url to content that returns user IDs (EOS format)                     |
+| `NO_CHECK_LIST_URL`           |                   | An `http` URL to content that returns user IDs (EOS format)                               |
+| `NO_CHECK_LIST_PULL_INTERVAL` | `5`               | The interval, in minutes, on how often the list should be pulled from the URL.            |
+| `ALLOW_CHEATERS_URL`          |                   | Admin List: An `http` URL to content that returns user IDs (EOS format)                   |
+| `ALLOW_CHEATERS_UPDATE_INTERVAL` |                | The interval, in minutes, on how often the list should be pulled from the URL.            |
+| `BAN_LIST_URL`                |                   | Ban List: An `http` URL to content that returns user IDs (EOS format)                     |
 
 ---
 
@@ -97,26 +97,28 @@ This Docker image is designed to run a dedicated server for the game Ark Surviva
 ### Volumes
 When you run the docker compose up it should create this folders in the same folder as the docker-compose.yaml file unless changed by the user
 
-| Volume Path                                          | Description                                   |
+| Volume Path                                          | Description                                    |
 | ---------------------------------------------------- | ---------------------------------------------- |
-| `./ASA`                                              | Game files                                     |
-| `./ARK Survival Ascended Dedicated Server`           | Server files                                   |
-| `./Cluster`                                          | Cluster files                                  |
+| `./data/asa`                                         | Game files                                     |
+| `./data/asa-server`                                  | Server files                                   |
+| `./data/cluster`                                     | Cluster files                                  |
+| `./data/asa-data`                                    | Extra data files                               |
 
 ---
 
 ### Recommended System Requirements
 
-- CPU: min 2 CPUs
-- RAM: > 16 GB
-- Disk: ~50 GB
+|        | MINIMUM | RECOMMENDED |
+| ------ | ------- | ----------- |
+| `CPU`  | `2`     | `4`         |
+| `RAM`  | `16Gi`  | `24Gi`      |
+| `DISK` | `50Gi`  | `75Gi`      |
 
 ---
 
 ### Usage
 
 #### Docker Compose
-
 
 If you're planning to change the volume directories, create those directories manually before starting the service.
 

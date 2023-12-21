@@ -26,19 +26,18 @@ RUN mkdir -p "$PROGRAM_FILES" \
   && groupmod -o -g $PGID games \
   && usermod -o -u $PUID -g games games
 
-# Install jq, curl, and dependencies for rcon-cli
 USER root
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 # Set the entry point to Supervisord
 ENTRYPOINT ["/usr/games/scripts/init.sh"]
 HEALTHCHECK --interval=60s --timeout=30s --start-period=60s --retries=3 CMD [ "/usr/games/scripts/healthcheck.sh" ]
 
-
 # Copy scripts folder into the container
 COPY scripts/ /usr/games/scripts/
 # Copy defaults folder into the container
 COPY defaults/ /usr/games/defaults/
 
+# Install jq, curl, and dependencies for rcon-cli
 # hadolint ignore=DL3008
 RUN apt-get update \
   && apt-get install --no-install-recommends --yes jq curl unzip nano bc cron \
