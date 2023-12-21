@@ -22,9 +22,12 @@ check_vm_max_map_count() {
   if [ "$current_map_count" -lt "$required_map_count" ]; then
     echo "ERROR: The vm.max_map_count on the host system is too low ($current_map_count) and needs to be at least $required_map_count."
     echo "To fix this issue temporarily (until the next reboot), run the following command on your Docker host:"
-    echo "sudo sysctl -w vm.max_map_count=262144"
+    echo "sudo sysctl -w vm.max_map_count=$required_map_count"
     echo "For a permanent fix, add the following line to /etc/sysctl.conf on your Docker host and then run 'sysctl -p':"
-    echo "vm.max_map_count=262144"
+    echo "vm.max_map_count=$required_map_count"
+    echo ""
+    echo "sudo -s echo "vm.max_map_count=$required_map_count" >> /etc/sysctl.conf && sudo sysctl -p"
+    echo ""
     echo "After making this change, please restart the Docker container."
     exit 1
   fi

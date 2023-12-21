@@ -1,3 +1,9 @@
+# ignore all files in this directory
+data/asa-data/*
+# except this file
+!data/asa-data/.gitkeep
+!data/asa-data/.env.sample
+
 
 \.idea/
 __pycache__/**

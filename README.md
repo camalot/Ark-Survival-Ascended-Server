@@ -1,15 +1,13 @@
 
 # Documentation for Ark Survival Ascended Server Docker Image
 
+> [!NOTE]
+> This project was originally based on [Acekorneya/Ark-Survival-Ascended-Server](https://github.com/Acekorneya/Ark-Survival-Ascended-Server). 
+
 ## Docker Image Details
 
 This Docker image is designed to run a dedicated server for the game Ark Survival Ascended. It's based on `scottyhardy/docker-wine` to enable the running of Windows applications. The image uses a bash script to handle startup, server installation, server update ,and setting up environment variables.
 
-### [Docker Hub Repository](https://hub.docker.com/r/acekorneya/asa_server)
-
-<!-- add github markdown note -->
-> [!NOTE]
-> This is the docker hub for the original docker image this is based off of. The container for this project is in the `packages` on the right hand side
 
 ---
 
@@ -33,15 +31,49 @@ This Docker image is designed to run a dedicated server for the game Ark Surviva
 | `MOTD_DURATION`               | `30`              | Duration for the Message of the Day                                                       |
 | `MAP_NAME`                    | `TheIsland`       | The map name (`TheIsland') Or Custom Map Name Can Be Enter as well                        |
 | `SESSION_NAME`                | `Server_name`     | The session name for the server                                                           |
-| `SERVER_ADMIN_PASSWORD_FILE`  |                   |                                                                                           |
-| `SERVER_ADMIN_PASSWORD`       | `MyPassword`      | The admin password for the server                                                         |
-| `SERVER_PASSWORD_FILE`        |                   |                                                                                           |
+| `SERVER_ADMIN_PASSWORD_FILE`  |                   | A file that contains the admin password for the server                                    |
+| `SERVER_ADMIN_PASSWORD`       | `MyPassword`      | The admin password for the server. Will override `SERVER_ADMIN_PASSWORD_FILE`.            |
+| `SERVER_PASSWORD_FILE`        |                   | A file that contains the password to connect to the server.                               |
 | `SERVER_PASSWORD`             |                   | Set a server password or leave it blank (ONLY NUMBERS AND CHARACTERS ARE ALLOWED BY DEVS) |
 | `ASA_PORT`                    | `7777`            | The game port for the server                                                              |
 | `MAX_PLAYERS`                 | `127`             | Max allowed players                                                                       |
 | `CLUSTER_ID`                  | `cluster`         | The Cluster ID for the server                                                             |
 | `MOD_IDS`                     |                   | Add your mod IDs here, separated by commas, e.g., 123456789,987654321                     |
 | `CUSTOM_SERVER_ARGS`          |                   | If You need to add more Custom Args -ForceRespawnDinos -ForceAllowCaveFlyers              |
+| `QUERY_PORT`                  | `27015`           | The query port for server discovery                                                       |
+| `AUTO_SAVE_PERIOD_MINUTES`    |                   | The time, in minutes, in which to auto save.                                              |
+| `IMPLANT_SUICIDE_CD`          |                   |                                                                                           |
+| `DIFFICULTY_OFFSET`           |                   |                                                                                           |
+| `OVERRIDE_OFFICIAL_DIFFICULTY`|                   |                                                                                           |
+| `SERVER_AUTO_FORCE_RESPAWN_WILD_DINOS_INTERVAL` | |                                                                                           |
+| `ITEM_STACK_SIZE_MULTIPLIER`  |                   |                                                                                           |
+| `STRUCTURE_PREVENT_RESOURCE_RADIUS_MULTIPLIER` |  |                                                                                           |
+| `TRIBE_NAME_CHANGE_COOLDOWN`  |                   |                                                                                           |
+| `ENABLE_PVE`                  |                   |                                                                                           |
+| `ALLOW_HITMARKERS`            |                   |                                                                                           |
+| `ALLOW_HIDE_DAMAGE_SOURCE_FROM_LOGS` |            |                                                                                           |
+| `SHOW_MAP_PLAYER_LOCATION`    |                   |                                                                                           |
+| `SERVER_CROSSHAIR`            |                   |                                                                                           |
+| `DISABLE_DINO_DECAY_PVE`      |                   |                                                                                           |
+| `ALWAYS_ALLOW_STRUCTURE_PICKUP` |                 |                                                                                           |
+| `ALLOW_CRATE_SPAWNS_ON_TOP_OF_STRUCTURES` |       |                                                                                           |
+| `ALLOW_FLYER_CARRY_PVE`       |                   |                                                                                           |
+| `ALLOW_THIRD_PERSON_VIEW`     | `TRUE`            |                                                                                           |
+| `PREVENT_DOWNLOAD_SURVIVORS`  |                   |                                                                                           |
+| `PREVENT_DOWNLOAD_ITEMS`      |                   |                                                                                           |
+| `PREVENT_DOWNLOAD_DINOS`      |                   |                                                                                           |
+| `PREVENT_UPLOAD_SURVIVORS`    |                   |                                                                                           |
+| `PREVENT_UPLOAD_ITEMS`        |                   |                                                                                           |
+| `PREVENT_UPLOAD_DINOS`        |                   |                                                                                           |
+| `ENABLE_WHITELIST`            |                   | Only allow whitelisted users to connect to the server.                                    |
+| `WHITELIST_URL`               |                   | An `http` url to content that returns user IDs (EOS format)                               |
+| `WHITELIST_PULL_INTERVAL`     | `5`               | The interval, in minutes, on how often the list should be pulled from the url.            |
+| `ENABLE_NO_CHECK_LIST`        |                   | Allow users on list to connect even if the server is full.                                |
+| `NO_CHECK_LIST_URL`           |                   | An `http` url to content that returns user IDs (EOS format)                               |
+| `NO_CHECK_LIST_PULL_INTERVAL` | `5`               | The interval, in minutes, on how often the list should be pulled from the url.            |
+| `ALLOW_CHEATERS_URL`          |                   | Admin List: An `http` url to content that returns user IDs (EOS format)                   |
+| `ALLOW_CHEATERS_UPDATE_INTERVAL` |                | The interval, in minutes, on how often the list should be pulled from the url.            |
+| `BAN_LIST_URL`                |                   | Ban List: An `http` url to content that returns user IDs (EOS format)                     |
 
 ---
 
@@ -85,48 +117,6 @@ When you run the docker compose up it should create this folders in the same fol
 
 #### Docker Compose
 
-Create a `docker-compose.yaml` file and populate it with the service definition.
-
-``` yaml
-version: '2.4'
-
-services:
-  asaserver:
-    build: .
-    image: acekorneya/asa_server:latest
-    container_name: asa_Server
-    restart: unless-stopped
-    environment:
-      - PUID=1001                            # The UID to run server as
-      - PGID=1001                            # The GID to run server as
-      - BATTLEEYE=FALSE                      # Set to TRUE to use BattleEye, FALSE to not use BattleEye
-      - RCON_ENABLED=TRUE                    # Needed for Graceful Shutdown / Updates / Server Notifications
-      - DISPLAY_POK_MONITOR_MESSAGE=TRUE     # Or FALSE to suppress the Server Monitor / Update Monitor 
-      - UPDATE_SERVER=TRUE                   # Enable or disable update checks
-      - CHECK_FOR_UPDATE_INTERVAL=24         # Check for Updates interval in hours
-      - RESTART_NOTICE_MINUTES=30            # Duration in minutes for notifying players before a server restart due to updates
-      - ENABLE_MOTD=FALSE                    # Enable or disable Message of the Day
-      - MOTD=                                # Message of the Day
-      - MOTD_DURATION=30                     # Duration for the Message of the Day
-      - MAP_NAME=TheIsland
-      - SESSION_NAME=Server_name
-      - SERVER_ADMIN_PASSWORD=MyPassword
-      - SERVER_PASSWORD=                     # Set a server password or leave it blank (ONLY NUMBERS AND CHARACTERS ARE ALLOWED BY DEVS)
-      - ASA_PORT=7777
-      - RCON_PORT=27020
-      - MAX_PLAYERS=70
-      - CLUSTER_ID=cluster
-      - MOD_IDS=                             # Add your mod IDs here, separated by commas, e.g., 123456789,987654321
-      - CUSTOM_SERVER_ARGS=                  # If You need to add more Custom Args -ForceRespawnDinos -ForceAllowCaveFlyers
-    ports:
-      - "7777:7777/tcp"
-      - "7777:7777/udp"
-    volumes:
-      - "./ASA:/usr/games/.wine/drive_c/POK/Steam/steamapps/common/ARK Survival Ascended Dedicated Server/ShooterGame"
-      - "./ARK Survival Ascended Dedicated Server:/usr/games/.wine/drive_c/POK/Steam/steamapps/common/ARK Survival Ascended Dedicated Server"
-      - "./Cluster:/usr/games/.wine/drive_c/POK/Steam/steamapps/common/ShooterGame"
-    mem_limit: 16G 
-```
 
 If you're planning to change the volume directories, create those directories manually before starting the service.
 
@@ -145,7 +135,7 @@ For custom settings, edit GameUserSettings.ini in ASA/Saved/Config/WindowsServer
 
 ---
 ## Temp Fix
-IF you see this at the end of you logs
+If you see this at the end of you logs
 ``` shell
 asa_pve_Server | [2023.11.06-03.55.48:449][  1]Allocator Stats for binned2 are not in this build set BINNED2_ALLOCATOR_STATS 1 in MallocBinned2.cpp
 ```
