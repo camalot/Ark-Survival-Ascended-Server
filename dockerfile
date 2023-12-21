@@ -38,7 +38,7 @@ COPY defaults/ /usr/games/defaults/
 # hadolint ignore=DL3008
 RUN apt-get update \
   && apt-get install --no-install-recommends --yes jq curl unzip nano bc cron \
-  && rm -rf /var/lib/apt/lists/* && \
+  && rm -rf /var/lib/apt/lists/* \
   && curl -L https://github.com/itzg/rcon-cli/releases/download/1.6.3/rcon-cli_1.6.3_linux_amd64.tar.gz | tar xvz \
   && mv rcon-cli /usr/local/bin/ \
   && chmod +x /usr/local/bin/rcon-cli \
