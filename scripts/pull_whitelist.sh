@@ -5,7 +5,7 @@ if [ "${ENABLE_WHITELIST,,}" != "true" ]; then
   exit 0
 fi
 
-if [ -z "${WHITELIST_URL// }" ]; then
+if [[ -z "${WHITELIST_URL// /}" ]]; then
   echo "Whitelist URL not set, exiting: '$WHITELIST_URL'"
   exit 0
 fi

@@ -1,5 +1,5 @@
 # Use an image that has Wine installed to run Windows applications
-FROM scottyhardy/docker-wine
+FROM scottyhardy/docker-wine:latest
 
 # Add ARG for PUID and PGID with a default value
 ARG PUID=1001
@@ -25,7 +25,9 @@ RUN groupmod -o -g $PGID games && \
 
 # Install jq, curl, and dependencies for rcon-cli
 USER root
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
+# hadolint ignore=DL3008
 RUN apt-get update && \
   apt-get install -y jq curl unzip nano bc cron && \
   rm -rf /var/lib/apt/lists/* && \
@@ -43,20 +45,22 @@ USER games
 WORKDIR /usr/games
 
 # Install SteamCMD
-RUN wget https://steamcdn-a.akamaihd.net/client/installer/steamcmd.zip \
-    && unzip steamcmd.zip -d "$PROGRAM_FILES/Steam" \
-    && rm steamcmd.zip
+RUN curl -sL https://steamcdn-a.akamaihd.net/client/installer/steamcmd.zip -o steamcmd.zip \
+  && unzip steamcmd.zip -d "$PROGRAM_FILES/Steam" \
+  && rm steamcmd.zip
+# RUN wget https://steamcdn-a.akamaihd.net/client/installer/steamcmd.zip \
+#     && unzip steamcmd.zip -d "$PROGRAM_FILES/Steam" \
+#     && rm steamcmd.zip
 
 # Debug: Output the directory structure for Program Files to debug
-RUN ls -R "$WINEPREFIX/drive_c/POK"
-
-# Install Steam app dependencies
-RUN ln -s "$PROGRAM_FILES/Steam" /usr/games/Steam && \
-    mkdir -p /usr/games/Steam/steamapps/common && \
-    find /usr/games/Steam/steamapps/common -maxdepth 0 -not -name "Steamworks Shared"
+RUN ls -R "$WINEPREFIX/drive_c/POK" && \
+  ln -s "$PROGRAM_FILES/Steam" /usr/games/Steam && \
+  mkdir -p /usr/games/Steam/steamapps/common && \
+  find /usr/games/Steam/steamapps/common -maxdepth 0 -not -name "Steamworks Shared" \
+  chown -R games:games "$WINEPREFIX"
 
 # Explicitly set the ownership of WINEPREFIX directory to games
-RUN chown -R games:games "$WINEPREFIX"
+# RUN chown -R games:games "$WINEPREFIX"
 
 # Switch back to root for final steps
 USER root
@@ -67,10 +71,9 @@ COPY scripts/ /usr/games/scripts/
 COPY defaults/ /usr/games/defaults/
 
 # Remove Windows-style carriage returns from the scripts
-RUN sed -i 's/\r//' /usr/games/scripts/*.sh
+RUN sed -i 's/\r//' /usr/games/scripts/*.sh && chmod +x /usr/games/scripts/*.sh
 
-# Make scripts executable
-RUN chmod +x /usr/games/scripts/*.sh
+USER games
 
 # Set the entry point to Supervisord
 ENTRYPOINT ["/usr/games/scripts/init.sh"]

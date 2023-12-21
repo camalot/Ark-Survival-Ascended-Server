@@ -1,11 +1,11 @@
 
-### Documentation for Ark Survival Ascended Server Docker Image
+# Documentation for Ark Survival Ascended Server Docker Image
 
 #### Docker Image Details
 
 This Docker image is designed to run a dedicated server for the game Ark Survival Ascended. It's based on `scottyhardy/docker-wine` to enable the running of Windows applications. The image uses a bash script to handle startup, server installation, server update ,and setting up environment variables.
 
-#### Docker Hub Repository: https://hub.docker.com/r/acekorneya/asa_server
+#### [Docker Hub Repository](https://hub.docker.com/r/acekorneya/asa_server) 
 
 ---
 
@@ -35,7 +35,7 @@ This Docker image is designed to run a dedicated server for the game Ark Surviva
 | `SERVER_PASSWORD`             |                   | Set a server password or leave it blank (ONLY NUMBERS AND CHARACTERS ARE ALLOWED BY DEVS) |
 | `ASA_PORT`                    | `7777`            | The game port for the server                                                              |
 | `MAX_PLAYERS`                 | `127`             | Max allowed players                                                                       |
-| `CLUSTER_ID`                  | `cluster`         | The Cluster ID for the server                                                             | 
+| `CLUSTER_ID`                  | `cluster`         | The Cluster ID for the server                                                             |
 | `MOD_IDS`                     |                   | Add your mod IDs here, separated by commas, e.g., 123456789,987654321                     |
 | `CUSTOM_SERVER_ARGS`          |                   | If You need to add more Custom Args -ForceRespawnDinos -ForceAllowCaveFlyers              |
 
@@ -44,7 +44,7 @@ This Docker image is designed to run a dedicated server for the game Ark Surviva
 #### Additional Information
 
 - **PUID and PGID**: These are important for setting the permissions of the folders that Docker will use. Make sure to set these values based on your host machine's user and group ID
-  
+
 - **Folder Creation**: Before starting the Docker Compose file, make sure to manually create any folders that you'll be using for volumes, especially if you're overriding the default folders.
 
 ---
@@ -83,7 +83,7 @@ When you run the docker compose up it should create this folders in the same fol
 
 Create a `docker-compose.yaml` file and populate it with the service definition. 
 
-```yaml
+``` yaml
 version: '2.4'
 
 services:
@@ -122,15 +122,13 @@ services:
       - "./ARK Survival Ascended Dedicated Server:/usr/games/.wine/drive_c/POK/Steam/steamapps/common/ARK Survival Ascended Dedicated Server"
       - "./Cluster:/usr/games/.wine/drive_c/POK/Steam/steamapps/common/ShooterGame"
     mem_limit: 16G 
-
-
 ```
 
 If you're planning to change the volume directories, create those directories manually before starting the service.
 
 Then, run the following command to start the server:
 
-```bash
+``` shell
 sudo docker compose up
 ```
 
@@ -144,15 +142,15 @@ For custom settings, edit GameUserSettings.ini in ASA/Saved/Config/WindowsServer
 ---
 ### Temp Fix ###
 IF you see this at the end of you logs 
-```
+``` shell
 asa_pve_Server | [2023.11.06-03.55.48:449][  1]Allocator Stats for binned2 are not in this build set BINNED2_ALLOCATOR_STATS 1 in MallocBinned2.cpp
 ```
 you need to run this command first 
-```
+``` shell
 sysctl -w vm.max_map_count=262144
 ```
 if you want to make it perment 
-```
+``` shell
 sudo -s echo "vm.max_map_count=262144" >> /etc/sysctl.conf && sysctl -p
 ```
 ### Hypervisors
@@ -163,7 +161,7 @@ If you want to run Rcon_manager.sh download it just place it in the same folder 
 
 you can also do automatic restart with CronJobs example below
 
-```
+``` shell
 0 3 * * * /path/to/start_rcon_manager.sh -restart 10
 ```
 this will schedule a restart every day at 3 AM with a 10-minute countdown
@@ -171,23 +169,23 @@ this will schedule a restart every day at 3 AM with a 10-minute countdown
 #### UPDATING DOCKER IMAGE
 Open a terminal or command prompt.
 
-romove old docker image 
-```
+remove old docker image 
+``` shell
 docker rmi acekorneya/asa_server:latest
 ```
 then run this command downloads the latest version of the Ark: Survival Ascended Docker image from Docker Hub.
-```
-docker pull acekorneya/asa_server:latest.
+``` shell
+docker pull acekorneya/asa_server:latest
 ```
 Restart the Docker Container
 
 First, bring down your current container with 
-```
-docker-compose down.
+``` shell
+docker-compose down
 ```
 Then, start it again using 
-```
-docker-compose up.
+``` shell
+docker-compose up
 ```
 These commands stop the currently running container and start a new one with the updated image.
 

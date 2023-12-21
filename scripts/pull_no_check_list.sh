@@ -4,7 +4,7 @@ if [ "${ENABLE_NO_CHECK_LIST,,}" != "true" ]; then
   echo "No check list not enabled, exiting: '${ENABLE_NO_CHECK_LIST,,}'"
   exit 0
 fi
-if [ -z "${NO_CHECK_LIST_URL// }" ]; then
+if [[ -z "${NO_CHECK_LIST_URL// /}" ]]; then
   echo "No check list URL not set, exiting: '$NO_CHECK_LIST_URL'"
   exit 0
 fi

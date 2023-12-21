@@ -351,7 +351,7 @@ update_ini_settings() {
     # Handle MOTD based on ENABLE_MOTD value
     if [ "${ENABLE_MOTD,,}" = "true" ]; then
       # Prepare MOTD by escaping newline characters
-      local escaped_motd;
+      local escaped_motd
       # shellcheck disable=SC2001
       escaped_motd=$(echo "$MOTD" | sed 's/\\n/\\\\n/g')
       update_ini_setting "$gus_ini" "MessageOfTheDay" "Message" "$escaped_motd"
@@ -612,11 +612,11 @@ start_server() {
 
   # create a cron job to execute /usr/games/scripts/pull_whitelist.sh every X minutes
   if [ "${ENABLE_WHITELIST,,}" = "true" ]; then
-    if [[ -z "${WHITELIST_URL// }" ]]; then
+    if [[ -z "${WHITELIST_URL// /}" ]]; then
       echo "ERROR: The WHITELIST_URL must be set when ENABLE_WHITELIST is set to true."
       exit 1
     fi
-    if [[ -z "${WHITELIST_PULL_INTERVAL// }" ]]; then
+    if [[ -z "${WHITELIST_PULL_INTERVAL// /}" ]]; then
       echo "ERROR: The WHITELIST_PULL_INTERVAL must be set when ENABLE_WHITELIST is set to true."
       exit 1
     fi
@@ -636,11 +636,11 @@ start_server() {
 
   # create a cron job to execute /usr/games/scripts/pull_no_check_list.sh every X minutes
   if [ "${ENABLE_NO_CHECK_LIST,,}" = "true" ]; then
-    if [[ -z "${NO_CHECK_LIST_URL// }" ]]; then
+    if [[ -z "${NO_CHECK_LIST_URL// /}" ]]; then
       echo "ERROR: The NO_CHECK_LIST_URL must be set when ENABLE_NO_CHECK_LIST is set to true."
       exit 1
     fi
-    if [[ -z "${NO_CHECK_LIST_PULL_INTERVAL// }" ]]; then
+    if [[ -z "${NO_CHECK_LIST_PULL_INTERVAL// /}" ]]; then
       echo "ERROR: The NO_CHECK_LIST_PULL_INTERVAL must be set when ENABLE_NO_CHECK_LIST is set to true."
       exit 1
     fi
@@ -711,7 +711,6 @@ start_server() {
   # Kill the tail process when the server stops
   kill $TAIL_PID
 }
-
 
 # Main function
 main() {
