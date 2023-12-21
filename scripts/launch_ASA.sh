@@ -254,7 +254,7 @@ is_numeric() {
 
   # validate that the value is a number
   if [ -n "$var_name" ]; then
-    local value;
+    local value
     value="${!var_name}"
     if [ -n "$value" ]; then
       if ! [[ "$value" =~ ^-?[0-9]+(\.[0-9]+)?$ ]]; then
@@ -263,20 +263,19 @@ is_numeric() {
       fi
     fi
     if [ -n "$min" ]; then
-      if (( $(echo "$value < $min" | bc -l) )); then
+      if (($(echo "$value < $min" | bc -l))); then
         echo "ERROR: The $var_name must be greater than or equal to $min."
         exit 1
       fi
     fi
     if [ -n "$max" ]; then
-      if (( $(echo "$value > $max" | bc -l) )); then
+      if (($(echo "$value > $max" | bc -l))); then
         echo "ERROR: The $var_name must be less than or equal to $max."
         exit 1
       fi
     fi
   fi
 }
-
 
 update_ini_settings() {
   local gus_ini
@@ -345,7 +344,6 @@ update_ini_settings() {
   update_ini_setting "$gus_ini" "/Script/ShooterGame.ShooterGameUserSettings" "PreventUploadItems" "$PREVENT_UPLOAD_ITEMS"
   update_ini_setting "$gus_ini" "/Script/ShooterGame.ShooterGameUserSettings" "PreventUploadDinos" "$PREVENT_UPLOAD_DINOS"
 
-
   # Check if the file exists
   if [ -f "$gus_ini" ]; then
     # Remove existing [MessageOfTheDay] section
@@ -354,7 +352,8 @@ update_ini_settings() {
     if [ "${ENABLE_MOTD,,}" = "true" ]; then
       # Prepare MOTD by escaping newline characters
       local escaped_motd;
-      escaped_motd=$(echo "$MOTD" | sed 's/\\n/\\\\n/g') # shellcheck disable=SC2001
+      # shellcheck disable=SC2001
+      escaped_motd=$(echo "$MOTD" | sed 's/\\n/\\\\n/g')
       update_ini_setting "$gus_ini" "MessageOfTheDay" "Message" "$escaped_motd"
       update_ini_setting "$gus_ini" "MessageOfTheDay" "Duration" "$MOTD_DURATION"
     else
@@ -364,7 +363,6 @@ update_ini_settings() {
   else
     echo "$gus_ini not found."
   fi
-
 
   # [/Script/ShooterGame.ShooterGameMode]
   update_ini_setting "$game_ini" "/Script/ShooterGame.ShooterGameMode" "BabyImprintingStatScaleMultiplier" "$BABY_IMPRINTING_STAT_SCALE_MULTIPLIER"
@@ -416,7 +414,6 @@ update_ini_setting_quote() {
   fi
 }
 
-
 update_ini_setting() {
   local ini_file
   ini_file="$1"
@@ -451,13 +448,13 @@ cluster_dir() {
 # Determine the map path based on environment variable
 determine_map_path() {
   case "$MAP_NAME" in
-    "TheIsland")
-      MAP_PATH="TheIsland_WP"
-      ;;
-    "ScorchedEarth")
-      MAP_PATH="ScorchedEarth_WP"
-      ;;
-    *)
+  "TheIsland")
+    MAP_PATH="TheIsland_WP"
+    ;;
+  "ScorchedEarth")
+    MAP_PATH="ScorchedEarth_WP"
+    ;;
+  *)
     # Check if the custom MAP_NAME already ends with '_WP'
     if [[ "$MAP_NAME" == *"_WP" ]]; then
       MAP_PATH="$MAP_NAME"
@@ -551,12 +548,12 @@ shutdown_handler() {
 
   # Initial delay to avoid catching a previous save message
   echo "Waiting a few seconds before checking for save completion..."
-  sleep 5  # Initial delay, can be adjusted based on server behavior
+  sleep 5 # Initial delay, can be adjusted based on server behavior
 
   # Wait for save to complete
   echo "Waiting for save to complete..."
   while ! save_complete_check; do
-    sleep 5  # Check every 5 seconds
+    sleep 5 # Check every 5 seconds
   done
 
   echo "World saved. Shutting down the server..."
@@ -576,7 +573,7 @@ find_new_log_entries() {
 
 start_server() {
   # Check if the log file exists and rename it to archive
-  local old_log_file;
+  local old_log_file
   old_log_file="$ASA_DIR/Saved/Logs/ShooterGame.log"
   if [ -f "$old_log_file" ]; then
     local timestamp
@@ -615,40 +612,50 @@ start_server() {
 
   # create a cron job to execute /usr/games/scripts/pull_whitelist.sh every X minutes
   if [ "${ENABLE_WHITELIST,,}" = "true" ]; then
-    if [ -z "${WHITELIST_URL// }" ]; then
+    if [[ -z "${WHITELIST_URL// }" ]]; then
       echo "ERROR: The WHITELIST_URL must be set when ENABLE_WHITELIST is set to true."
       exit 1
     fi
-    if [ -z "${WHITELIST_PULL_INTERVAL// }" ]; then
+    if [[ -z "${WHITELIST_PULL_INTERVAL// }" ]]; then
       echo "ERROR: The WHITELIST_PULL_INTERVAL must be set when ENABLE_WHITELIST is set to true."
       exit 1
     fi
     echo "Creating cron job to pull whitelist every $WHITELIST_PULL_INTERVAL minutes..."
-    (crontab -l 2>/dev/null; echo "*/$WHITELIST_PULL_INTERVAL * * * * /usr/games/scripts/pull_whitelist.sh") | crontab -
+    (
+      crontab -l 2>/dev/null
+      echo "*/$WHITELIST_PULL_INTERVAL * * * * /usr/games/scripts/pull_whitelist.sh"
+    ) | crontab -
     bash /usr/games/scripts/pull_whitelist.sh
   else
     # remove the crontab job if it exists
     echo "Removing whitelist cron job..."
-    (crontab -l 2>/dev/null | grep -v "/usr/games/scripts/pull_whitelist.sh") | crontab -
+    (
+      crontab -l 2>/dev/null | grep -v "/usr/games/scripts/pull_whitelist.sh"
+    ) | crontab -
   fi
 
   # create a cron job to execute /usr/games/scripts/pull_no_check_list.sh every X minutes
   if [ "${ENABLE_NO_CHECK_LIST,,}" = "true" ]; then
-    if [ -z "${NO_CHECK_LIST_URL// }" ]; then
+    if [[ -z "${NO_CHECK_LIST_URL// }" ]]; then
       echo "ERROR: The NO_CHECK_LIST_URL must be set when ENABLE_NO_CHECK_LIST is set to true."
       exit 1
     fi
-    if [ -z "${NO_CHECK_LIST_PULL_INTERVAL// }" ]; then
+    if [[ -z "${NO_CHECK_LIST_PULL_INTERVAL// }" ]]; then
       echo "ERROR: The NO_CHECK_LIST_PULL_INTERVAL must be set when ENABLE_NO_CHECK_LIST is set to true."
       exit 1
     fi
     echo "Creating cron job to pull no check list every $NO_CHECK_LIST_PULL_INTERVAL minutes..."
-    (crontab -l 2>/dev/null; echo "*/$NO_CHECK_LIST_PULL_INTERVAL * * * * /usr/games/scripts/pull_no_check_list.sh") | crontab -
+    (
+      crontab -l 2>/dev/null
+      echo "*/$NO_CHECK_LIST_PULL_INTERVAL * * * * /usr/games/scripts/pull_no_check_list.sh"
+    ) | crontab -
     bash /usr/games/scripts/pull_no_check_list.sh
   else
     # remove the crontab job if it exists
     echo "Removing no check list cron job..."
-    (crontab -l 2>/dev/null | grep -v "/usr/games/scripts/pull_no_check_list.sh") | crontab -
+    (
+      crontab -l 2>/dev/null | grep -v "/usr/games/scripts/pull_no_check_list.sh"
+    ) | crontab -
   fi
 
   # Start the server with conditional arguments
@@ -662,7 +669,7 @@ start_server() {
   echo "Server process started with PID: $SERVER_PID"
 
   # Immediate write to PID file
-  echo $SERVER_PID > /usr/games/ark_server.pid
+  echo $SERVER_PID >/usr/games/ark_server.pid
   echo "PID $SERVER_PID written to /usr/games/ark_server.pid"
 
   # Wait for the log file to be created with a timeout

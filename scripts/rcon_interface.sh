@@ -21,7 +21,7 @@ send_rcon_command() {
 initiate_restart() {
   if [ -z "$1" ]; then
     echo -n "Enter countdown duration in minutes: "
-    read duration_in_minutes
+    read -r duration_in_minutes
     duration_in_minutes="${duration_in_minutes:-5}"  # Default to 5 minutes if not specified
   else
     duration_in_minutes=$1
@@ -56,7 +56,7 @@ initiate_restart() {
 # Handle automated restart or custom command if arguments are provided
 if [ "$1" == "-restart" ] && [ -n "$2" ]; then
   echo "Automated restart initiated with a $2 minute countdown."
-  initiate_restart $2
+  initiate_restart "$2"
   exit 0
 elif [ "$1" == "-custom" ] && [ -n "$2" ]; then
   echo "Executing custom RCON command: $2"

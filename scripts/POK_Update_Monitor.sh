@@ -4,7 +4,6 @@
 ASA_DIR="/usr/games/.wine/drive_c/POK/Steam/steamapps/common/ARK Survival Ascended Dedicated Server/ShooterGame"
 APPID=2430930
 
-
 # Function to get the build ID from the appmanifest.acf file
 get_build_id_from_acf() {
   local acf_file

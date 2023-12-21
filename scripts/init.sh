@@ -14,9 +14,9 @@ PGID="${PGID:-1001}"
 
 # Function to check if vm.max_map_count is set to a sufficient value
 check_vm_max_map_count() {
-  local required_map_count;
+  local required_map_count
   required_map_count=262144
-  local current_map_count;
+  local current_map_count
   current_map_count=$(cat /proc/sys/vm/max_map_count)
 
   if [ "$current_map_count" -lt "$required_map_count" ]; then

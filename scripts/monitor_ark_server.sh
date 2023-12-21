@@ -6,7 +6,7 @@ INITIAL_STARTUP_DELAY=120  # Delay in seconds before starting the monitoring
 
 # RCON configuration
 RCON_HOST="localhost"
-RCON_PORT="${RCON_PORT}"
+RCON_PORT="${RCON_PORT:-27020}"
 RCON_PASSWORD="${SERVER_ADMIN_PASSWORD}"
 RESTART_NOTICE_MINUTES="${RESTART_NOTICE_MINUTES:-30}"  # Default to 30 minutes if not set
 
