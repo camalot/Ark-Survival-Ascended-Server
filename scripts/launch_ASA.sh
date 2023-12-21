@@ -14,8 +14,8 @@ initialize_variables() {
 
   # Clean and format MOD_IDS if it's set
   if [ -n "$MOD_IDS" ]; then
-      # Remove all quotes and extra spaces
-      MOD_IDS=$(echo "$MOD_IDS" | tr -d '"' | tr -d "'" | tr -d ' ')
+    # Remove all quotes and extra spaces
+    MOD_IDS=$(echo "$MOD_IDS" | tr -d '"' | tr -d "'" | tr -d ' ')
   fi
 
   RESET_GAME_SETTINGS="${RESET_GAME_SETTINGS:-"FALSE"}"
@@ -38,7 +38,7 @@ initialize_variables() {
 
   # if the password is not set, generate a random one
   if [ -z "$SERVER_ADMIN_PASSWORD" ]; then
-    SERVER_ADMIN_PASSWORD=$(tr -dc 'a-zA-Z0-9' < /dev/urandom | fold -w 20 | head -n 1)
+    SERVER_ADMIN_PASSWORD=$(tr -dc 'a-zA-Z0-9' </dev/urandom | fold -w 20 | head -n 1)
     echo "Generated server admin password: $ASA_SERVER_ADMIN_PASSWORD"
   fi
 
@@ -60,6 +60,7 @@ initialize_variables() {
 
   # Set the session name
   SESSION_NAME="${SESSION_NAME:-"ASA Server"}"
+  CLUSTER_ID="${CLUSTER_ID:-"cluster"}"
 
   QUERY_PORT="${QUERY_PORT:-27015}"
   is_numeric "QUERY_PORT"
@@ -208,7 +209,7 @@ initialize_variables() {
 }
 
 is_url() {
-  local var_name;
+  local var_name
   var_name="$1"
 
   # validate that the value is a URL
@@ -224,9 +225,9 @@ is_url() {
 }
 
 get_bool() {
-  local var_name;
+  local var_name
   var_name="$1"
-  local default_value;
+  local default_value
   default_value="$2"
 
   if [ -n "$var_name" ]; then
@@ -244,11 +245,11 @@ get_bool() {
 }
 
 is_numeric() {
-  local var_name;
+  local var_name
   var_name="$1"
-  local min;
+  local min
   min=""
-  local max;
+  local max
   max=""
 
   # validate that the value is a number
@@ -278,9 +279,9 @@ is_numeric() {
 
 
 update_ini_settings() {
-  local gus_ini;
+  local gus_ini
   gus_ini="$ASA_DIR/Saved/Config/WindowsServer/GameUserSettings.ini"
-  local game_ini;
+  local game_ini
   game_ini="$ASA_DIR/Saved/Config/WindowsServer/Game.ini"
 
   # [ServerSettings]
@@ -353,7 +354,7 @@ update_ini_settings() {
     if [ "${ENABLE_MOTD,,}" = "true" ]; then
       # Prepare MOTD by escaping newline characters
       local escaped_motd;
-      escaped_motd=$(echo "$MOTD" | sed 's/\\n/\\\\n/g')
+      escaped_motd=$(echo "$MOTD" | sed 's/\\n/\\\\n/g') # shellcheck disable=SC2001
       update_ini_setting "$gus_ini" "MessageOfTheDay" "Message" "$escaped_motd"
       update_ini_setting "$gus_ini" "MessageOfTheDay" "Duration" "$MOTD_DURATION"
     else
@@ -393,13 +394,13 @@ update_ini_settings() {
 }
 
 update_ini_setting_quote() {
-  local ini_file;
+  local ini_file
   ini_file="$1"
-  local section;
+  local section
   section="$2"
-  local setting;
+  local setting
   setting="$3"
-  local value;
+  local value
   value="$4"
 
   # Check if the file exists
@@ -417,13 +418,13 @@ update_ini_setting_quote() {
 
 
 update_ini_setting() {
-  local ini_file;
+  local ini_file
   ini_file="$1"
-  local section;
+  local section
   section="$2"
-  local setting;
+  local setting
   setting="$3"
-  local value;
+  local value
   value="$4"
 
   # Check if the file exists
@@ -457,21 +458,21 @@ determine_map_path() {
       MAP_PATH="ScorchedEarth_WP"
       ;;
     *)
-      # Check if the custom MAP_NAME already ends with '_WP'
-      if [[ "$MAP_NAME" == *"_WP" ]]; then
-          MAP_PATH="$MAP_NAME"
-      else
-          MAP_PATH="${MAP_NAME}_WP"
-      fi
-      echo "Using map: $MAP_PATH"
-      ;;
+    # Check if the custom MAP_NAME already ends with '_WP'
+    if [[ "$MAP_NAME" == *"_WP" ]]; then
+      MAP_PATH="$MAP_NAME"
+    else
+      MAP_PATH="${MAP_NAME}_WP"
+    fi
+    echo "Using map: $MAP_PATH"
+    ;;
   esac
 }
 
 # Get the build ID from the appmanifest.acf file
 get_build_id_from_acf() {
   if [[ -f "$PERSISTENT_ACF_FILE" ]]; then
-    local build_id;
+    local build_id
     build_id=$(grep -E "^\s+\"buildid\"\s+" "$PERSISTENT_ACF_FILE" | grep -o '[[:digit:]]*')
     echo "$build_id"
   else
@@ -481,15 +482,15 @@ get_build_id_from_acf() {
 
 # Get the current build ID from SteamCMD API
 get_current_build_id() {
-  local build_id;
+  local build_id
   build_id=$(curl -sX GET "https://api.steamcmd.net/v1/info/$APPID" | jq -r ".data.\"$APPID\".depots.branches.public.buildid")
   echo "$build_id"
 }
 
 install_server() {
-  local saved_build_id;
+  local saved_build_id
   saved_build_id=$(get_build_id_from_acf)
-  local current_build_id;
+  local current_build_id
   current_build_id=$(get_current_build_id)
 
   if [ -z "$saved_build_id" ] || [ "$saved_build_id" != "$current_build_id" ]; then
@@ -507,9 +508,9 @@ install_server() {
 }
 
 update_server() {
-  local saved_build_id;
+  local saved_build_id
   saved_build_id=$(get_build_id_from_acf)
-  local current_build_id;
+  local current_build_id
   current_build_id=$(get_current_build_id)
 
   if [ -z "$saved_build_id" ] || [ "$saved_build_id" != "$current_build_id" ]; then
@@ -528,7 +529,7 @@ update_server() {
 
 # Function to check if save is complete
 save_complete_check() {
-  local log_file;
+  local log_file
   log_file="$ASA_DIR/Saved/Logs/ShooterGame.log"
   # Check if the "World Save Complete" message is in the log file
   if tail -n 10 "$log_file" | grep -q "World Save Complete"; then
@@ -543,10 +544,10 @@ save_complete_check() {
 shutdown_handler() {
   echo "Initiating graceful shutdown..."
   echo "Notifying players about the immediate shutdown and save..."
-  rcon-cli --host localhost --port $RCON_PORT --password $SERVER_ADMIN_PASSWORD "ServerChat Immediate server shutdown initiated. Saving the world..."
+  rcon-cli --host "localhost" --port "$RCON_PORT" --password "$SERVER_ADMIN_PASSWORD" "ServerChat Immediate server shutdown initiated. Saving the world..."
 
   echo "Saving the world..."
-  rcon-cli --host localhost --port $RCON_PORT --password $SERVER_ADMIN_PASSWORD "saveworld"
+  rcon-cli --host "localhost" --port "$RCON_PORT" --password "$SERVER_ADMIN_PASSWORD" "saveworld"
 
   # Initial delay to avoid catching a previous save message
   echo "Waiting a few seconds before checking for save completion..."
@@ -578,17 +579,17 @@ start_server() {
   local old_log_file;
   old_log_file="$ASA_DIR/Saved/Logs/ShooterGame.log"
   if [ -f "$old_log_file" ]; then
-    local timestamp;
+    local timestamp
     timestamp=$(date +%F-%T)
     mv "$old_log_file" "${old_log_file}_$timestamp.log"
   fi
 
   # Initialize the mods argument to an empty string
-  local mods_arg;
+  local mods_arg
   mods_arg=""
-  local battleye_arg;
+  local battleye_arg
   battleye_arg=""
-  local custom_args;
+  local custom_args
   custom_args=""
 
   # Check if MOD_IDS is set and not empty
@@ -652,10 +653,10 @@ start_server() {
 
   # Start the server with conditional arguments
   sudo -u games wine "$ASA_DIR/Binaries/Win64/ArkAscendedServer.exe" \
-    $MAP_PATH?listen?$session_name_arg?Port=${ASA_PORT} \
-    -WinLiveMaxPlayers=${MAX_PLAYERS} -clusterid=${CLUSTER_ID} -ClusterDirOverride=$CLUSTER_DIR_OVERRIDE \
-    -servergamelog -servergamelogincludetribelogs -ServerRCONOutputTribeLogs -NotifyAdminCommandsInChat -nosteamclient $custom_args \
-    $mods_arg $battleye_arg 2>/dev/null &
+    "$MAP_PATH?listen?Port=${ASA_PORT}" \
+    -WinLiveMaxPlayers="${MAX_PLAYERS}" -clusterid="${CLUSTER_ID}" -ClusterDirOverride="$CLUSTER_DIR_OVERRIDE" \
+    -servergamelog -servergamelogincludetribelogs -ServerRCONOutputTribeLogs -NotifyAdminCommandsInChat -nosteamclient "$custom_args" \
+    "$mods_arg" "$battleye_arg" 2>/dev/null &
 
   SERVER_PID=$!
   echo "Server process started with PID: $SERVER_PID"
@@ -665,9 +666,9 @@ start_server() {
   echo "PID $SERVER_PID written to /usr/games/ark_server.pid"
 
   # Wait for the log file to be created with a timeout
-  local LOG_FILE;
+  local LOG_FILE
   LOG_FILE="$ASA_DIR/Saved/Logs/ShooterGame.log"
-  local TIMEOUT;
+  local TIMEOUT
   TIMEOUT=120
   while [[ ! -f "$LOG_FILE" && $TIMEOUT -gt 0 ]]; do
     sleep 1
@@ -679,12 +680,12 @@ start_server() {
   fi
 
   # Find the line to start tailing from
-  local START_LINE;
+  local START_LINE
   START_LINE=$(find_new_log_entries)
 
   # Tail the ShooterGame log file starting from the new session entries
   tail -n +"$START_LINE" -f "$LOG_FILE" &
-  local TAIL_PID;
+  local TAIL_PID
   TAIL_PID=$!
 
   # Wait for the server to fully start
