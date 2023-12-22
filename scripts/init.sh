@@ -9,8 +9,8 @@ CONFIG_DIR="/usr/games/.wine/drive_c/POK/Steam/steamapps/common/ARK Survival Asc
 WINDOWS_SERVER_DIR="/usr/games/.wine/drive_c/POK/Steam/steamapps/common/ARK Survival Ascended Dedicated Server/ShooterGame/Saved/Config/WindowsServer"
 
 # Get PUID and PGID from environment variables, or default to 1000
-PUID="${PUID:-1001}"
-PGID="${PGID:-1001}"
+PUID="${PUID:-1000}"
+PGID="${PGID:-1000}"
 
 echo "PUID: $PUID"
 echo "PGID: $PGID"
