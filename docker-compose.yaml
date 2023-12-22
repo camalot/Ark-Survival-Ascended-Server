@@ -58,12 +58,13 @@ services:
       ENABLE_PVE: TRUE
 
     ports:
-      - "7777:7777/tcp"
-      - "7777:7777/udp"
-      - "27015:27015/tcp"
-      - "27015:27015/udp"
-      - "27016:27016/tcp"
-      - "27016:27016/udp"
+      - "27020:27020/tcp" # RCON
+      - "7777:7777/tcp" # Game
+      - "7777:7777/udp" # Game
+      - "27015:27015/tcp" # Game
+      - "27015:27015/udp" # Game
+      - "27016:27016/tcp" # Game
+      - "27016:27016/udp" # Game
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /etc/timezone:/etc/timezone:ro
@@ -72,4 +73,4 @@ services:
       - "./data/cluster:/usr/games/.wine/drive_c/POK/Steam/steamapps/common/ShooterGame"
       - "./data/asa-data:/data"
 
-    mem_limit: 24G
+    mem_limit: 16G

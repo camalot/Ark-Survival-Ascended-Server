@@ -4,16 +4,16 @@
 > [!NOTE]
 > This project was originally based on [Acekorneya/Ark-Survival-Ascended-Server](https://github.com/Acekorneya/Ark-Survival-Ascended-Server).
 
-## Docker Image Details
+## DOCKER IMAGE DETAILS
 
 This Docker image is designed to run a dedicated server for the game Ark Survival Ascended. It's based on `scottyhardy/docker-wine` to enable the running of Windows applications. The image uses a bash script to handle startup, server installation, server update ,and setting up environment variables.
 
 
 ---
 
-### Environment Variables
+### ENVIRONMENT VARIABLES
 
-| Variable                      | Default           | Description                                                                               |
+| VARIABLE                      | DEFAULT           | DESCRIPTION                                                                               |
 | ------------------------------| ------------------| ------------------------------------------------------------------------------------------|
 | `PUID`                        | `1001`            | The UID to run server as                                                                  |
 | `PGID`                        | `1001`            | The GID to run server as                                                                  |
@@ -74,7 +74,46 @@ This Docker image is designed to run a dedicated server for the game Ark Surviva
 | `ALLOW_CHEATERS_URL`          |                   | Admin List: An `http` URL to content that returns user IDs (EOS format)                   |
 | `ALLOW_CHEATERS_UPDATE_INTERVAL` |                | The interval, in minutes, on how often the list should be pulled from the URL.            |
 | `BAN_LIST_URL`                |                   | Ban List: An `http` URL to content that returns user IDs (EOS format)                     |
-
+| `STRUCTURE_PICKUP_TIME_AFTER_PLACEMENT` |         |                                                                                           |
+| `STRUCTURE_PICKUP_HOLD_DURATION` |                |                                                                                           |
+| `MAX_STRUCTURES_IN_RANGE`     |                   |                                                                                           |
+| `START_TIME_HOUR`             |                   |                                                                                           |
+| `KICK_IDLE_PLAYERS_PERIOD`    |                   |                                                                                           |
+| `PER_PLATFORM_MAX_STRUCTURES_MULTIPLIER` |        |                                                                                           |
+| `PLATFORM_SADDLE_BUILD_AREA_BOUNDS_MULTIPLIER` |  |                                                                                           |
+| `DINO_DAMAGE_MULTIPLIER`      |                   |                                                                                           |
+| `PVE_DINO_DECAY_PERIOD_MULTIPLIER` |              |                                                                                           |
+| `PVE_STRUCTURE_DECAY_PERIOD_MULTIPLIER` |         |                                                                                           |
+| `RAID_DINO_CHARACTER_FOOD_DRAIN_MULTIPLIER` |     |                                                                                           |
+| `XP_MULTIPLIER`               |                   |                                                                                           |
+| `TAMING_SPEED_MULTIPLIER`     |                   |                                                                                           |
+| `HARVEST_AMOUNT_MULTIPLIER`   |                   |                                                                                           |
+| `STRUCTURE_RESISTANCE_MULTIPLIER` |               |                                                                                           |
+| `OXYGEN_SWIM_SPEED_STAT_MULTIPLIER` |             |                                                                                           |
+| `BABY_IMPRINTING_STAT_SCALE_MULTIPLIER` |         |                                                                                           |
+| `BABY_CUDDLE_INTERVAL_MULTIPLIER` |               |                                                                                           |
+| `BABY_CUDDLE_GRACE_PERIOD_MULTIPLIER` |           |                                                                                           |
+| `BABY_CUDDLE_LOSE_IMPRINT_QUALITY_SPEED_MULTIPLIER` | |                                                                                       |
+| `GLOBAL_SPOILING_TIME_MULTIPLIER` |               |                                                                                           |
+| `GLOBAL_ITEM_DECOMPOSITION_TIME_MULTIPLIER` |     |                                                                                           |
+| `GLOBAL_CORPSE_DECOMPOSITION_TIME_MULTIPLIER` |   |                                                                                           |
+| `PVP_ZONE_STRUCTURE_DAMAGE_MULTIPLIER` |          |                                                                                           |
+| `CROP_GROWTH_SPEED_MULTIPLIER` |                  |                                                                                           |
+| `LAY_EGG_INTERVAL_MULTIPLIER`  |                  |                                                                                           |
+| `POOP_INTERVAL_MULTIPLIER`     |                  |                                                                                           |
+| `EGG_HATCH_SPEED_MULTIPLIER`   |                  |                                                                                           |
+| `CROP_DECAY_SPEED_MULTIPLIER`  |                  |                                                                                           |
+| `MATING_INTERVAL_MULTIPLIER`   |                  |                                                                                           |
+| `BABY_MATURE_SPEED_MULTIPLIER` |                  |                                                                                           |
+| `BABY_FOOD_CONSUMPTION_SPEED_MULTIPLIER` |        |                                                                                           |
+| `DINO_HARVESTING_DAMAGE_MULTIPLIER` |             |                                                                                           |
+| `PLAYER_HARVESTING_DAMAGE_MULTIPLIER` |           |                                                                                           |
+| `KILL_XP_MULTIPLIER`           |                  |                                                                                           |
+| `HARVEST_XP_MULTIPLIER`        |                  |                                                                                           |
+| `CRAFT_XP_MULTIPLIER`          |                  |                                                                                           |
+| `GENERIC_XP_MULTIPLIER`        |                  |                                                                                           |
+| `SPECIAL_XP_MULTIPLIER`        |                  |                                                                                           |
+| `MAX_TAMED_DINOS`              |                  |                                                                                           |
 ---
 
 ### Additional Information
@@ -87,17 +126,19 @@ This Docker image is designed to run a dedicated server for the game Ark Surviva
 
 ### Ports
 
-| Port         | Description                            |
+| PORT         | DESCRIPTION                            |
 | ------------ | -------------------------------------- |
 | `7777/tcp`   | Game port                              |
 | `7777/udp`   | Game port                              |
+| `27020/tcp`  | RCON port                              |
+
 
 ---
 
 ### Volumes
 When you run the docker compose up it should create this folders in the same folder as the docker-compose.yaml file unless changed by the user
 
-| Volume Path                                          | Description                                    |
+| VOLUME PATH                                          | DESCRIPTION                                    |
 | ---------------------------------------------------- | ---------------------------------------------- |
 | `./data/asa`                                         | Game files                                     |
 | `./data/asa-server`                                  | Server files                                   |
