@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Define paths
 ASA_DIR="/usr/games/.wine/drive_c/POK/Steam/steamapps/common/ARK Survival Ascended Dedicated Server/ShooterGame"
@@ -39,53 +39,42 @@ check_vm_max_map_count() {
 # Check vm.max_map_count before proceeding
 check_vm_max_map_count
 
-# This should not work if the user that is running the container is not root.
-# Fix games user uid & gid then re set the owner of wine folders
-# groupmod -o -g "$PGID" games
-# usermod -o -u "$PUID" -g games games
-# chown -R games:games "$WINEPREFIX"
-
-# Create directories if they do not exist and set permissions
-# for DIR in "$ASA_DIR" "$ARK_DIR" "$CLUSTER_DIR" "$SAVED_DIR" "$CONFIG_DIR" "$WINDOWS_SERVER_DIR"; do
-#   if [ ! -d "$DIR" ]; then
-#     mkdir -p "$DIR"
-#   fi
-#   chown -R "$PUID":"$PGID" "$DIR"
-#   chmod -R 755 "$DIR"
-# done
-
 # Function to copy default configuration files if they don't exist
 copy_default_configs() {
   mkdir -p "$ASA_DIR" "$ARK_DIR" "$CLUSTER_DIR" "$SAVED_DIR" "$CONFIG_DIR" "$WINDOWS_SERVER_DIR"
   # Copy GameUserSettings.ini if it does not exist
   if [ ! -f "${WINDOWS_SERVER_DIR}/GameUserSettings.ini" ]; then
     cp /usr/games/defaults/GameUserSettings.ini "$WINDOWS_SERVER_DIR"
-    # chown "$PUID":"$PGID" "${WINDOWS_SERVER_DIR}/GameUserSettings.ini"
-    chmod 755 "${WINDOWS_SERVER_DIR}/GameUserSettings.ini"
   fi
 
   # Copy Game.ini if it does not exist
   if [ ! -f "${WINDOWS_SERVER_DIR}/Game.ini" ]; then
     cp /usr/games/defaults/Game.ini "$WINDOWS_SERVER_DIR"
-    # chown "$PUID":"$PGID" "${WINDOWS_SERVER_DIR}/Game.ini"
-    chmod 755 "${WINDOWS_SERVER_DIR}/Game.ini"
   fi
 }
 
 take_ownership() {
+  # there are somethings that need "repair" of ownership if PUID/GUID changed from the default of 1000
+  # these things still need to be identified
+
+  # some know issues:
+  # - crontab : crontab: your UID isn't in the passwd file.
+  # - sudo : sudo: you do not exist in the passwd database
+  # - open /usr/games/.wine/drive_c/POK/Steam/steamapps/common/ARK Survival Ascended Dedicated Server/ShooterGame/Saved/Config/WindowsServer/GameUserSettings.ini: permission denied
+
   echo "Taking ownership of files and folders for PUID:GUID $PUID:$PGID"
   sudo groupmod -o -g "$PGID" games
   sudo usermod -o -u "$PUID" -g games games
-  sudo chown -R "/usr/games"
-  sudo chown -R "/usr/games/.wine"
-  sudo chmod -R 755 "$ASA_DIR" "$ARK_DIR" "$CLUSTER_DIR" "$SAVED_DIR" "$CONFIG_DIR" "$WINDOWS_SERVER_DIR"
+  for dir in "/usr/games" "/usr/games/.wine" "$ASA_DIR" "$ARK_DIR" "$CLUSTER_DIR" "$SAVED_DIR" "$CONFIG_DIR" "$WINDOWS_SERVER_DIR"; do
+    sudo chown -R "$PUID":"$PGID" "$dir"
+    sudo chmod -R 755 "$dir"
+  done
+  echo "Finished taking ownership of files and folders for PUID:GUID $PUID:$PGID"
 }
 
-take_ownership
 # Call copy_default_configs function
 copy_default_configs
-
-
+take_ownership
 
 # Start monitor_ark_server.sh in the background
 /usr/games/scripts/monitor_ark_server.sh &
