@@ -9,8 +9,8 @@ CONFIG_DIR="/usr/games/.wine/drive_c/POK/Steam/steamapps/common/ARK Survival Asc
 WINDOWS_SERVER_DIR="/usr/games/.wine/drive_c/POK/Steam/steamapps/common/ARK Survival Ascended Dedicated Server/ShooterGame/Saved/Config/WindowsServer"
 
 # Get PUID and PGID from environment variables, or default to 1000
-PUID="${PUID:-1000}"
-PGID="${PGID:-1000}"
+PUID="${PUID:-1001}"
+PGID="${PGID:-1001}"
 
 echo "PUID: $PUID"
 echo "PGID: $PGID"
@@ -72,8 +72,20 @@ copy_default_configs() {
   fi
 }
 
+take_ownership() {
+  echo "Taking ownership of files and folders for PUID:GUID $PUID:$PGID"
+  sudo groupmod -o -g "$PGID" games
+  sudo usermod -o -u "$PUID" -g games games
+  sudo chown -R "/usr/games"
+  sudo chown -R "/usr/games/.wine"
+  sudo chmod -R 755 "$ASA_DIR" "$ARK_DIR" "$CLUSTER_DIR" "$SAVED_DIR" "$CONFIG_DIR" "$WINDOWS_SERVER_DIR"
+}
+
+take_ownership
 # Call copy_default_configs function
 copy_default_configs
+
+
 
 # Start monitor_ark_server.sh in the background
 /usr/games/scripts/monitor_ark_server.sh &

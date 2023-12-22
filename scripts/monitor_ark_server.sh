@@ -90,6 +90,8 @@ restart_server() {
   bash "$LAUNCH_SCRIPT"
 }
 
+echo "ARK server monitor started."
+
 # Wait for the initial startup before monitoring
 sleep $INITIAL_STARTUP_DELAY
 
@@ -119,8 +121,10 @@ while true; do
 
   # Restart the server if it's not running and not currently updating
   if ! is_process_running && ! is_server_updating; then
+    echo "Server is not running, restarting..."
     restart_server
   fi
 
+  echo "Monitoring ARK server..."
   sleep 60 # Short sleep to prevent high CPU usage
 done

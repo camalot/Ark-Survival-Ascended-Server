@@ -10,6 +10,7 @@ services:
     hostname: asa_server
     container_name: asa_server
     restart: unless-stopped
+    user: "1000:1000"
     networks:
       - internal
     dns:

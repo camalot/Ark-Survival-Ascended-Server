@@ -4,8 +4,8 @@ FROM scottyhardy/docker-wine:latest
 
 # Add ARG for PUID and PGID with a default value
 # Setting this here, at build time, does not allow a user to change it at runtime
-ARG PUID="1000"
-ARG PGID="1000"
+ARG PUID="1001"
+ARG PGID="1001"
 ARG INI_FILE_VERSION="1.4.6"
 ARG RCON_CLI_VERSION="1.6.4"
 
@@ -57,7 +57,9 @@ RUN apt-get update \
   && ln -s "${PROGRAM_FILES}/Steam" "/usr/games/Steam" \
   && mkdir -p "/usr/games/Steam/steamapps/common" \
   && chown -R games:games "${PROGRAM_FILES}" \
-  && chown -R games:games "${WINEPREFIX}"
+  && chown -R games:games "${WINEPREFIX}" \
+  # allow games to sudo without a password
+  && echo "games ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers.d/games
 
 # NEED TO FIND A WAY TO NOT HAVE TO RUN THIS AS ROOT
 # setting this user does not work. it causes permission issues
