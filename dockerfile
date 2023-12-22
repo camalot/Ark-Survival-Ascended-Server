@@ -58,8 +58,11 @@ RUN apt-get update \
   && mkdir -p "/usr/games/Steam/steamapps/common" \
   && chown -R games:games "${PROGRAM_FILES}" \
   && chown -R games:games "${WINEPREFIX}" \
+  # remove comment to include /etc/sudoers.d/
+  # && sed -i 's?^#includedir /etc/sudoers.d?includedir /etc/sudoers.d?g' /etc/sudoers \
   # allow games to sudo without a password
-  && echo "games ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers.d/games
+  # && echo "games ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/games
+  && echo "games ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 
 # NEED TO FIND A WAY TO NOT HAVE TO RUN THIS AS ROOT
 # setting this user does not work. it causes permission issues
