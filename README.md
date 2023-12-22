@@ -15,8 +15,8 @@ This Docker image is designed to run a dedicated server for the game Ark Surviva
 
 | VARIABLE                      | DEFAULT           | DESCRIPTION                                                                               |
 | ------------------------------| ------------------| ------------------------------------------------------------------------------------------|
-| `PUID`                        | `1001`            | The UID to run server as                                                                  |
-| `PGID`                        | `1001`            | The GID to run server as                                                                  |
+| `PUID`                        | `1000`            | The UID to run server as                                                                  |
+| `PGID`                        | `1000`            | The GID to run server as                                                                  |
 | `RESET_GAME_SETTINGS`         | `FALSE`           | Reset the Game.ini and GameUserSettings.ini to the "defaults" before applying             |
 | `BATTLEEYE`                   | `TRUE`            | Set to TRUE to use BattleEye, FALSE to not use BattleEye                                  |
 | `RCON_ENABLED`                | `TRUE`            | Needed for Graceful Shutdown                                                              |
