@@ -3,8 +3,9 @@
 FROM scottyhardy/docker-wine:latest
 
 # Add ARG for PUID and PGID with a default value
-ARG PUID="1001"
-ARG PGID="1001"
+# Setting this here, at build time, does not allow a user to change it at runtime
+ARG PUID="1000"
+ARG PGID="1000"
 ARG INI_FILE_VERSION="1.4.6"
 ARG RCON_CLI_VERSION="1.6.4"
 
