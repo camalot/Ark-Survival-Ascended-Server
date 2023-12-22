@@ -125,6 +125,5 @@ while true; do
     restart_server
   fi
 
-  echo "Monitoring ARK server..."
   sleep 60 # Short sleep to prevent high CPU usage
 done
