@@ -36,33 +36,35 @@ check_vm_max_map_count() {
 # Check vm.max_map_count before proceeding
 check_vm_max_map_count
 
+# This should not work if the user that is running the container is not root.
 # Fix games user uid & gid then re set the owner of wine folders
-groupmod -o -g "$PGID" games
-usermod -o -u "$PUID" -g games games
-chown -R games:games "$WINEPREFIX"
+# groupmod -o -g "$PGID" games
+# usermod -o -u "$PUID" -g games games
+# chown -R games:games "$WINEPREFIX"
 
 # Create directories if they do not exist and set permissions
-for DIR in "$ASA_DIR" "$ARK_DIR" "$CLUSTER_DIR" "$SAVED_DIR" "$CONFIG_DIR" "$WINDOWS_SERVER_DIR"; do
-  if [ ! -d "$DIR" ]; then
-    mkdir -p "$DIR"
-  fi
-  chown -R "$PUID":"$PGID" "$DIR"
-  chmod -R 755 "$DIR"
-done
+# for DIR in "$ASA_DIR" "$ARK_DIR" "$CLUSTER_DIR" "$SAVED_DIR" "$CONFIG_DIR" "$WINDOWS_SERVER_DIR"; do
+#   if [ ! -d "$DIR" ]; then
+#     mkdir -p "$DIR"
+#   fi
+#   chown -R "$PUID":"$PGID" "$DIR"
+#   chmod -R 755 "$DIR"
+# done
 
 # Function to copy default configuration files if they don't exist
 copy_default_configs() {
+  mkdir -p "$ASA_DIR" "$ARK_DIR" "$CLUSTER_DIR" "$SAVED_DIR" "$CONFIG_DIR" "$WINDOWS_SERVER_DIR"
   # Copy GameUserSettings.ini if it does not exist
   if [ ! -f "${WINDOWS_SERVER_DIR}/GameUserSettings.ini" ]; then
     cp /usr/games/defaults/GameUserSettings.ini "$WINDOWS_SERVER_DIR"
-    chown "$PUID":"$PGID" "${WINDOWS_SERVER_DIR}/GameUserSettings.ini"
+    # chown "$PUID":"$PGID" "${WINDOWS_SERVER_DIR}/GameUserSettings.ini"
     chmod 755 "${WINDOWS_SERVER_DIR}/GameUserSettings.ini"
   fi
 
   # Copy Game.ini if it does not exist
   if [ ! -f "${WINDOWS_SERVER_DIR}/Game.ini" ]; then
     cp /usr/games/defaults/Game.ini "$WINDOWS_SERVER_DIR"
-    chown "$PUID":"$PGID" "${WINDOWS_SERVER_DIR}/Game.ini"
+    # chown "$PUID":"$PGID" "${WINDOWS_SERVER_DIR}/Game.ini"
     chmod 755 "${WINDOWS_SERVER_DIR}/Game.ini"
   fi
 }

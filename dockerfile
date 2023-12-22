@@ -43,7 +43,7 @@ RUN apt-get update \
   && curl -sL "https://github.com/bitnami/ini-file/releases/download/v${INI_FILE_VERSION}/ini-file-linux-amd64.tar.gz" | tar xvz \
   && mv ini-file-linux-amd64 /usr/local/bin/ini-file \
   && chmod +x /usr/local/bin/ini-file \
-  && mkdir -p "$WINEPREFIX" "$PROGRAM_FILES" \
+  && mkdir -p "${WINEPREFIX}" "$PROGRAM_FILES" \
   && usermod --shell /bin/bash games \
   && chown -R games:games /usr/games \
   && groupmod -o -g "$PGID" games \
@@ -51,12 +51,14 @@ RUN apt-get update \
   && sed -i 's/\r//' /usr/games/scripts/*.sh \
   && chmod +x /usr/games/scripts/*.sh \
   && curl -sL https://steamcdn-a.akamaihd.net/client/installer/steamcmd.zip -o steamcmd.zip \
-  && unzip steamcmd.zip -d "$PROGRAM_FILES/Steam" \
+  && unzip steamcmd.zip -d "${PROGRAM_FILES}/Steam" \
   && rm steamcmd.zip \
-  && ln -s "$PROGRAM_FILES/Steam" "/usr/games/Steam" \
+  && ln -s "${PROGRAM_FILES}/Steam" "/usr/games/Steam" \
   && mkdir -p "/usr/games/Steam/steamapps/common" \
-  && chown -R games:games "$WINEPREFIX"
+  && chown -R games:games "${PROGRAM_FILES}" \
+  && chown -R games:games "${WINEPREFIX}"
 
 # NEED TO FIND A WAY TO NOT HAVE TO RUN THIS AS ROOT
-# hadolint ignore=DL3002
-# USER games
+# setting this user does not work. it causes permission issues
+
+USER games
