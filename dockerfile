@@ -20,6 +20,7 @@ ENV ASA_DIR="$PROGRAM_FILES/Steam/steamapps/common/ARK Survival Ascended Dedicat
 # Set the working directory
 WORKDIR /usr/games
 
+# hadolint ignore=DL3002
 USER root
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 # Set the entry point to Supervisord

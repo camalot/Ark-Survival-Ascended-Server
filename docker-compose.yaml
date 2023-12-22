@@ -1,4 +1,4 @@
-
+---
 version: '3.7'
 networks:
   internal:
@@ -23,21 +23,21 @@ services:
       PGID: 1000
       TZ: America/Chicago
 
-      BATTLEEYE: FALSE
-      RCON_ENABLED: TRUE
-      MAP_NAME: TheIsland
+      BATTLEEYE: 'FALSE'
+      RCON_ENABLED: 'TRUE'
+      MAP_NAME: 'TheIsland'
 
-      DISPLAY_POK_MONITOR_MESSAGE: TRUE
-      UPDATE_SERVER: TRUE
+      DISPLAY_POK_MONITOR_MESSAGE: 'TRUE'
+      UPDATE_SERVER: 'TRUE'
       CHECK_FOR_UPDATE_INTERVAL: 24
       RESTART_NOTICE_MINUTES: 30
 
-      ENABLE_MOTD: FALSE
+      ENABLE_MOTD: 'FALSE'
       MOTD: ''
       MOTD_DURATION: 30
 
-      SESSION_NAME: TACO
-      SERVER_ADMIN_PASSWORD: P@55vv0rD
+      SESSION_NAME: 'TACO'
+      SERVER_ADMIN_PASSWORD: 'P@55vv0rD'
       SERVER_PASSWORD: ''
       ASA_PORT: 7777
       RCON_PORT: 27020
