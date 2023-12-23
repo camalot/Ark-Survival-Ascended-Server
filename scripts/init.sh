@@ -79,17 +79,17 @@ take_ownership() {
 
   local dir_list
   # Some of these directories are children of others. Taking ownership of the parent directory should be sufficient.
-  dir_list=( \
-    "$USER_DIR" \
-    "$WINE_DIR" \
-    "$ASA_DIR" \
-    "$ARK_DIR" \
-    "$CLUSTER_DIR" \
-    "$SAVED_DIR" \
-    "$CONFIG_DIR" \
-    "$WINDOWS_SERVER_DIR" \
-    "$STEAM_DIR" \
-    "$PROGRAM_FILES"\
+  dir_list=(
+    "$USER_DIR"
+    "$WINE_DIR"
+    "$ASA_DIR"
+    "$ARK_DIR"
+    "$CLUSTER_DIR"
+    "$SAVED_DIR"
+    "$CONFIG_DIR"
+    "$WINDOWS_SERVER_DIR"
+    "$STEAM_DIR"
+    "$PROGRAM_FILES"
   )
   for dir in "${dir_list[@]}"; do
     sudo chown -R "$PUID":"$PGID" "$dir"

@@ -56,7 +56,7 @@ services:
       # ENABLE_WHITELIST: TRUE
       # WHITELIST_URL: 'http://nodered.local/ark/whitelist'
 
-      ENABLE_PVE: TRUE
+      ENABLE_PVE: 'TRUE'
 
     ports:
       - "27020:27020/tcp" # RCON
