@@ -7,6 +7,10 @@ CLUSTER_DIR="/usr/games/.wine/drive_c/POK/Steam/steamapps/common/ShooterGame"
 SAVED_DIR="/usr/games/.wine/drive_c/POK/Steam/steamapps/common/ARK Survival Ascended Dedicated Server/ShooterGame/Saved"
 CONFIG_DIR="/usr/games/.wine/drive_c/POK/Steam/steamapps/common/ARK Survival Ascended Dedicated Server/ShooterGame/Saved/Config"
 WINDOWS_SERVER_DIR="/usr/games/.wine/drive_c/POK/Steam/steamapps/common/ARK Survival Ascended Dedicated Server/ShooterGame/Saved/Config/WindowsServer"
+STEAM_DIR="/usr/games/Steam"
+WINE_DIR="/usr/games/.wine"
+USER_DIR="/usr/games"
+PROGRAM_FILES="$WINEPREFIX/drive_c/POK"
 
 # Get PUID and PGID from environment variables, or default to 1000
 PUID="${PUID:-1000}"
@@ -63,9 +67,31 @@ take_ownership() {
   # - open /usr/games/.wine/drive_c/POK/Steam/steamapps/common/ARK Survival Ascended Dedicated Server/ShooterGame/Saved/Config/WindowsServer/GameUserSettings.ini: permission denied
 
   echo "Taking ownership of files and folders for PUID:GUID $PUID:$PGID"
+
+
   sudo groupmod -o -g "$PGID" games
   sudo usermod -o -u "$PUID" -g games games
-  for dir in "/usr/games" "/usr/games/.wine" "$ASA_DIR" "$ARK_DIR" "$CLUSTER_DIR" "$SAVED_DIR" "$CONFIG_DIR" "$WINDOWS_SERVER_DIR"; do
+
+  # now that the user PUID/PGID have been changed for the games user, we need to make sure the user has ownership of the files, and can perform actions on them
+
+  # make sure the user can edit/run cron jobs
+  # sudo chown -R "$PUID":"$PGID" /var/spool/cron/crontabs
+
+  local dir_list
+  # Some of these directories are children of others. Taking ownership of the parent directory should be sufficient.
+  dir_list=( \
+    "$USER_DIR" \
+    "$WINE_DIR" \
+    "$ASA_DIR" \
+    "$ARK_DIR" \
+    "$CLUSTER_DIR" \
+    "$SAVED_DIR" \
+    "$CONFIG_DIR" \
+    "$WINDOWS_SERVER_DIR" \
+    "$STEAM_DIR" \
+    "$PROGRAM_FILES"\
+  )
+  for dir in "${dir_list[@]}"; do
     sudo chown -R "$PUID":"$PGID" "$dir"
     sudo chmod -R 755 "$dir"
   done
