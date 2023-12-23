@@ -40,10 +40,10 @@ initialize_variables() {
     local ini_dir
     ini_dir="$ASA_DIR/Saved/Config/WindowsServer"
     echo "Resetting game settings to defaults"
-    cp -f /usr/games/defaults/game.ini "$ini_dir/Game.ini"
+    cp -f /usr/games/defaults/Game.ini "$ini_dir/Game.ini"
     chown "$PUID":"$PGID" "${ini_dir}/Game.ini"
     chmod 755 "${ini_dir}/Game.ini"
-    cp -f /usr/games/defaults/gameusersettings.ini "$ini_dir/GameUserSettings.ini"
+    cp -f /usr/games/defaults/GameUserSettings.ini "$ini_dir/GameUserSettings.ini"
     chown "$PUID":"$PGID" "${ini_dir}/GameUserSettings.ini"
     chmod 755 "${ini_dir}/GameUserSettings.ini"
   fi

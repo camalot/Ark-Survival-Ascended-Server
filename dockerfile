@@ -66,7 +66,8 @@ RUN apt-get update \
   # allow games to crontab
   && echo "games" > /etc/cron.d/cron.allow \
   # add games to crontab group
-  && usermod -a -G crontab games
+  && usermod -a -G crontab games \
+  && mkdir -p /var/spool/cron/crontabs/games /var/spool/cron/crontab
 
 
 
