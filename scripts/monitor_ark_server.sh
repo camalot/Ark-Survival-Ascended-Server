@@ -8,7 +8,7 @@ INITIAL_STARTUP_DELAY=120 # Delay in seconds before starting the monitoring
 RCON_HOST="localhost"
 RCON_PORT="${RCON_PORT:-27020}"
 RCON_PASSWORD="${SERVER_ADMIN_PASSWORD}"
-RESTART_NOTICE_MINUTES="${RESTART_NOTICE_MINUTES:-30}" # Default to 30 minutes if not set
+RESTART_NOTICE_MINUTES="${RESTART_NOTICE_MINUTES:-30}"             # Default to 30 minutes if not set
 UPDATE_WINDOW_MINIMUM_TIME=${UPDATE_WINDOW_MINIMUM_TIME:-12:00 AM} # Default to "12:00 AM" if not set
 UPDATE_WINDOW_MAXIMUM_TIME=${UPDATE_WINDOW_MAXIMUM_TIME:-11:59 PM} # Default to "11:59 PM" if not set
 
@@ -92,7 +92,6 @@ restart_server() {
   bash "$LAUNCH_SCRIPT"
 }
 
-
 monitor_start() {
   echo "ARK server monitor started."
 
@@ -123,7 +122,7 @@ monitor_start() {
       update_window_lower_bound=$(date -d "${UPDATE_WINDOW_MINIMUM_TIME}" +'%s')
       update_window_upper_bound=$(date -d "${UPDATE_WINDOW_MAXIMUM_TIME}" +'%s')
 
-      if (( current_time >= update_window_lower_bound && current_time < update_window_upper_bound )); then
+      if ((current_time >= update_window_lower_bound && current_time < update_window_upper_bound)); then
         if ((current_time - last_update_check_time > update_check_interval_seconds)); then
           if /usr/games/scripts/POK_Update_Monitor.sh; then
             notify_players_for_restart
