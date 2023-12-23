@@ -64,7 +64,11 @@ RUN apt-get update \
   # && echo "games ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/games
   && echo "games ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers \
   # allow games to crontab
-  && echo "games" > /etc/cron.d/cron.allow
+  && echo "games" > /etc/cron.d/cron.allow \
+  # add games to crontab group
+  && usermod -a -G crontab games
+
+
 
 # NEED TO FIND A WAY TO NOT HAVE TO RUN THIS AS ROOT
 # setting this user does not work. it causes permission issues

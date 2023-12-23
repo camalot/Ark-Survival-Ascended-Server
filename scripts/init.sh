@@ -11,10 +11,11 @@ STEAM_DIR="/usr/games/Steam"
 WINE_DIR="/usr/games/.wine"
 USER_DIR="/usr/games"
 PROGRAM_FILES="$WINEPREFIX/drive_c/POK"
+CRONTAB_DIR="/var/spool/cron/crontabs/games"
 
 # Get PUID and PGID from environment variables, or default to 1000
-PUID="${PUID:-1000}"
-PGID="${PGID:-1000}"
+PUID="${PUID:-1001}"
+PGID="${PGID:-1001}"
 
 echo "PUID: $PUID"
 echo "PGID: $PGID"
@@ -67,10 +68,9 @@ take_ownership() {
   # - open /usr/games/.wine/drive_c/POK/Steam/steamapps/common/ARK Survival Ascended Dedicated Server/ShooterGame/Saved/Config/WindowsServer/GameUserSettings.ini: permission denied
 
   echo "Taking ownership of files and folders for PUID:GUID $PUID:$PGID"
-
-
   sudo groupmod -o -g "$PGID" games
   sudo usermod -o -u "$PUID" -g games games
+  sudo usermod -a -G crontab games
 
   # now that the user PUID/PGID have been changed for the games user, we need to make sure the user has ownership of the files, and can perform actions on them
 
@@ -95,6 +95,16 @@ take_ownership() {
     sudo chown -R "$PUID":"$PGID" "$dir"
     sudo chmod -R 755 "$dir"
   done
+
+  # make sure the user can edit/run cron jobs
+  sudo chown root:crontab /usr/bin/crontab
+  sudo chown root:crontab /var/spool/cron/crontab
+  sudo chmod g+w /var/spool/cron/crontabs
+  sudo chmod 2755 /usr/bin/crontab
+
+  sudo chown -R games:crontab "$CRONTAB_DIR"
+  sudo chmod 600 "$CRONTAB_DIR"
+
   echo "Finished taking ownership of files and folders for PUID:GUID $PUID:$PGID"
 }
 
@@ -103,7 +113,9 @@ copy_default_configs
 take_ownership
 
 # Start monitor_ark_server.sh in the background
-/usr/games/scripts/monitor_ark_server.sh &
+(
+  /usr/games/scripts/monitor_ark_server.sh &
+)
 
 # Continue with the main application
 exec /usr/games/scripts/launch_ASA.sh
