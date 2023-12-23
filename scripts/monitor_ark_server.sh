@@ -92,51 +92,56 @@ restart_server() {
   bash "$LAUNCH_SCRIPT"
 }
 
-echo "ARK server monitor started."
 
-# Wait for the initial startup before monitoring
-sleep $INITIAL_STARTUP_DELAY
+monitor_start() {
+  echo "ARK server monitor started."
 
-local current_time
-local last_update_check_time
-local update_check_interval_seconds
-local update_window_lower_bound
-local update_window_upper_bound
+  # Wait for the initial startup before monitoring
+  sleep $INITIAL_STARTUP_DELAY
 
-# Monitoring loop
-while true; do
-  # Check if the server is currently updating (based on the presence of the updating.flag file)
-  if [ -f "/usr/games/updating.flag" ]; then
-    echo "Update/Installation in progress, waiting for it to complete..."
-    sleep 60
-    continue # Skip the rest of this loop iteration
-  fi
+  local current_time
+  local last_update_check_time
+  local update_check_interval_seconds
+  local update_window_lower_bound
+  local update_window_upper_bound
 
-  if [ "${UPDATE_SERVER,,}" = "true" ]; then
-    # Check for updates at the interval specified by CHECK_FOR_UPDATE_INTERVAL
-    current_time=$(date +%s)
-    last_update_check_time=${last_update_check_time:-0}
-    update_check_interval_seconds=$((CHECK_FOR_UPDATE_INTERVAL * 3600))
-    # Put constraints around the update check interval to prevent it from running outside of desired time windows
-    update_window_lower_bound=$(date -d "${UPDATE_WINDOW_MINIMUM_TIME}" +'%s')
-    update_window_upper_bound=$(date -d "${UPDATE_WINDOW_MAXIMUM_TIME}" +'%s')
+  # Monitoring loop
+  while true; do
+    # Check if the server is currently updating (based on the presence of the updating.flag file)
+    if [ -f "/usr/games/updating.flag" ]; then
+      echo "Update/Installation in progress, waiting for it to complete..."
+      sleep 60
+      continue # Skip the rest of this loop iteration
+    fi
 
-    if (( current_time >= update_window_lower_bound && current_time < update_window_upper_bound )); then
-      if ((current_time - last_update_check_time > update_check_interval_seconds)); then
-        if /usr/games/scripts/POK_Update_Monitor.sh; then
-          notify_players_for_restart
-          restart_server
+    if [ "${UPDATE_SERVER,,}" = "true" ]; then
+      # Check for updates at the interval specified by CHECK_FOR_UPDATE_INTERVAL
+      current_time=$(date +%s)
+      last_update_check_time=${last_update_check_time:-0}
+      update_check_interval_seconds=$((CHECK_FOR_UPDATE_INTERVAL * 3600))
+      # Put constraints around the update check interval to prevent it from running outside of desired time windows
+      update_window_lower_bound=$(date -d "${UPDATE_WINDOW_MINIMUM_TIME}" +'%s')
+      update_window_upper_bound=$(date -d "${UPDATE_WINDOW_MAXIMUM_TIME}" +'%s')
+
+      if (( current_time >= update_window_lower_bound && current_time < update_window_upper_bound )); then
+        if ((current_time - last_update_check_time > update_check_interval_seconds)); then
+          if /usr/games/scripts/POK_Update_Monitor.sh; then
+            notify_players_for_restart
+            restart_server
+          fi
+          last_update_check_time=$current_time
         fi
-        last_update_check_time=$current_time
       fi
     fi
-  fi
 
-  # Restart the server if it's not running and not currently updating
-  if ! is_process_running && ! is_server_updating; then
-    echo "Server is not running, restarting..."
-    restart_server
-  fi
+    # Restart the server if it's not running and not currently updating
+    if ! is_process_running && ! is_server_updating; then
+      echo "Server is not running, restarting..."
+      restart_server
+    fi
 
-  sleep 60 # Short sleep to prevent high CPU usage
-done
+    sleep 60 # Short sleep to prevent high CPU usage
+  done
+}
+
+monitor_start
