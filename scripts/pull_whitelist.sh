@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# shellcheck disable=SC1091
 source /usr/games/scripts/logger.sh
 
 if [ "${ENABLE_WHITELIST,,}" != "true" ]; then

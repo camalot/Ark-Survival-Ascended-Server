@@ -1,4 +1,5 @@
 #!/bin/bash
+# shellcheck disable=SC1091
 source /usr/games/scripts/logger.sh
 
 PID_FILE="/usr/games/ark_server.pid"

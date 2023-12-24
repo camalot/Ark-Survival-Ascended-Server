@@ -1,5 +1,5 @@
 #!/bin/bash
-
+# shellcheck disable=SC1091
 source /usr/games/scripts/logger.sh
 
 # load environment variables from .env file
