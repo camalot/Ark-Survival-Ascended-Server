@@ -91,18 +91,18 @@ take_ownership() {
     "$PROGRAM_FILES"
   )
   for dir in "${dir_list[@]}"; do
-    sudo chown -R "$PUID":"$PGID" "$dir" | debug
-    sudo chmod -R 755 "$dir" | debug
+    sudo chown -R "$PUID":"$PGID" "$dir"
+    sudo chmod -R 755 "$dir"
   done
 
   # make sure the user can edit/run cron jobs
-  sudo chown root:crontab /usr/bin/crontab | debug
-  sudo chown root:crontab /var/spool/cron/crontab | debug
-  sudo chmod g+w /var/spool/cron/crontabs | debug
-  sudo chmod 2755 /usr/bin/crontab | debug
+  sudo chown root:crontab /usr/bin/crontab
+  sudo chown root:crontab /var/spool/cron/crontab
+  sudo chmod g+w /var/spool/cron/crontabs
+  sudo chmod 2755 /usr/bin/crontab
 
-  sudo chown -R games:crontab "$CRONTAB_DIR" | debug
-  sudo chmod 600 "$CRONTAB_DIR" | debug
+  sudo chown -R games:crontab "$CRONTAB_DIR"
+  sudo chmod 600 "$CRONTAB_DIR"
 
   debug "Finished taking ownership of files and folders for PUID:GUID $PUID:$PGID"
 }
