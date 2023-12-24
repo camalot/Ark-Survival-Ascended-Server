@@ -30,13 +30,19 @@ check_vm_max_map_count() {
   current_map_count=$(cat /proc/sys/vm/max_map_count)
 
   if [ "$current_map_count" -lt "$required_map_count" ]; then
-    error "The vm.max_map_count on the host system is too low ($current_map_count) and needs to be at least $required_map_count.\n" \
-"To fix this issue temporarily (until the next reboot), run the following command on your Docker host:\n" \
-"sudo sysctl -w vm.max_map_count=$required_map_count\n\n" \
-"For a permanent fix, add the following line to /etc/sysctl.conf on your Docker host and then run 'sysctl -p':\n" \
-"vm.max_map_count=$required_map_count\n\n" \
-"sudo -s echo \"vm.max_map_count=$required_map_count\" >> /etc/sysctl.conf && sudo sysctl -p\n\n" \
-"After making this change, please restart the Docker container."
+    error << EOF
+The vm.max_map_count on the host system is too low ($current_map_count) and needs to be at least $required_map_count.
+To fix this issue temporarily (until the next reboot), run the following command on your Docker host:
+
+sudo sysctl -w vm.max_map_count=$required_map_count
+
+For a permanent fix, add the following line to /etc/sysctl.conf on your Docker host and then run 'sysctl -p':
+vm.max_map_count=$required_map_count
+
+sudo -s echo "vm.max_map_count=$required_map_count" >> /etc/sysctl.conf && sudo sysctl -p
+
+After making this change, please restart the Docker container.
+EOF
     exit 1
   fi
 }

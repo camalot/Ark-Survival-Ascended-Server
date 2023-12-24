@@ -3,7 +3,7 @@
 debug() {
   if [ "${DEBUG,,}" = "true" ]; then
     local message
-    message="$@"
+    message="$*"
     # if message is empty, don't print anything
     if [ -z "$message" ]; then
       return
@@ -16,7 +16,7 @@ debug() {
 
 info() {
   local message
-  message="$@"
+  message="$*"
   # if message is empty, don't print anything
   if [ -z "$message" ]; then
     return
@@ -27,7 +27,7 @@ info() {
 
 error() {
   local message
-  message="$@"
+  message="$*"
   # if message is empty, don't print anything
   if [ -z "$message" ]; then
     return
@@ -38,7 +38,7 @@ error() {
 
 warn() {
   local message
-  message="$@"
+  message="$*"
   # if message is empty, don't print anything
   if [ -z "$message" ]; then
     return
