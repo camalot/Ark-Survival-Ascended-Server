@@ -34,7 +34,7 @@ check_vm_max_map_count() {
 "sudo sysctl -w vm.max_map_count=$required_map_count\n\n" \
 "For a permanent fix, add the following line to /etc/sysctl.conf on your Docker host and then run 'sysctl -p':\n" \
 "vm.max_map_count=$required_map_count\n\n" \
-"sudo -s echo "vm.max_map_count=$required_map_count" >> /etc/sysctl.conf && sudo sysctl -p\n\n" \
+"sudo -s echo \"vm.max_map_count=$required_map_count\" >> /etc/sysctl.conf && sudo sysctl -p\n\n" \
 "After making this change, please restart the Docker container."
     exit 1
   fi
@@ -67,9 +67,9 @@ take_ownership() {
   # - open /usr/games/.wine/drive_c/POK/Steam/steamapps/common/ARK Survival Ascended Dedicated Server/ShooterGame/Saved/Config/WindowsServer/GameUserSettings.ini: permission denied
 
   debug "Taking ownership of files and folders for PUID:GUID $PUID:$PGID"
-  sudo groupmod -o -g "$PGID" games | debug
-  sudo usermod -o -u "$PUID" -g games games | debug
-  sudo usermod -a -G crontab games | debug
+  sudo groupmod -o -g "$PGID" games
+  sudo usermod -o -u "$PUID" -g games games
+  sudo usermod -a -G crontab games
 
   # now that the user PUID/PGID have been changed for the games user, we need to make sure the user has ownership of the files, and can perform actions on them
 
