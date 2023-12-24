@@ -94,7 +94,7 @@ restart_server() {
 }
 
 monitor_start() {
-  echo "ARK server monitor started."
+  info "ARK server monitor started."
 
   # Wait for the initial startup before monitoring
   sleep $INITIAL_STARTUP_DELAY

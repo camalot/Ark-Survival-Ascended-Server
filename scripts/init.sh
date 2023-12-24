@@ -67,9 +67,9 @@ take_ownership() {
   # - open /usr/games/.wine/drive_c/POK/Steam/steamapps/common/ARK Survival Ascended Dedicated Server/ShooterGame/Saved/Config/WindowsServer/GameUserSettings.ini: permission denied
 
   debug "Taking ownership of files and folders for PUID:GUID $PUID:$PGID"
-  sudo groupmod -o -g "$PGID" games
-  sudo usermod -o -u "$PUID" -g games games
-  sudo usermod -a -G crontab games
+  sudo groupmod -o -g "$PGID" games | debug
+  sudo usermod -o -u "$PUID" -g games games | debug
+  sudo usermod -a -G crontab games | debug
 
   # now that the user PUID/PGID have been changed for the games user, we need to make sure the user has ownership of the files, and can perform actions on them
 
@@ -91,18 +91,18 @@ take_ownership() {
     "$PROGRAM_FILES"
   )
   for dir in "${dir_list[@]}"; do
-    sudo chown -R "$PUID":"$PGID" "$dir"
-    sudo chmod -R 755 "$dir"
+    sudo chown -R "$PUID":"$PGID" "$dir" | debug
+    sudo chmod -R 755 "$dir" | debug
   done
 
   # make sure the user can edit/run cron jobs
-  sudo chown root:crontab /usr/bin/crontab
-  sudo chown root:crontab /var/spool/cron/crontab
-  sudo chmod g+w /var/spool/cron/crontabs
-  sudo chmod 2755 /usr/bin/crontab
+  sudo chown root:crontab /usr/bin/crontab | debug
+  sudo chown root:crontab /var/spool/cron/crontab | debug
+  sudo chmod g+w /var/spool/cron/crontabs | debug
+  sudo chmod 2755 /usr/bin/crontab | debug
 
-  sudo chown -R games:crontab "$CRONTAB_DIR"
-  sudo chmod 600 "$CRONTAB_DIR"
+  sudo chown -R games:crontab "$CRONTAB_DIR" | debug
+  sudo chmod 600 "$CRONTAB_DIR" | debug
 
   debug "Finished taking ownership of files and folders for PUID:GUID $PUID:$PGID"
 }

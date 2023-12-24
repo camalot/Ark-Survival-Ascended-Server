@@ -231,8 +231,6 @@ initialize_variables() {
 
   ALLOW_THIRD_PERSON_VIEW="$(get_bool "ALLOW_THIRD_PERSON_VIEW" "TRUE")"
   ENABLE_MOTD="$(get_bool "ENABLE_MOTD" "FALSE")"
-
-
 }
 
 is_url() {
