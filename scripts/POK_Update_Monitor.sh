@@ -1,4 +1,5 @@
 #!/bin/bash
+source /usr/games/scripts/logger.sh
 
 # Define necessary variables
 ASA_DIR="/usr/games/.wine/drive_c/POK/Steam/steamapps/common/ARK Survival Ascended Dedicated Server/ShooterGame"
@@ -30,12 +31,12 @@ current_build_id=$(get_current_build_id)
 
 if [ -z "$saved_build_id" ] || [ "$saved_build_id" != "$current_build_id" ]; then
   if [ "${DISPLAY_POK_MONITOR_MESSAGE,,}" = "true" ]; then
-    echo "Update available."
+    info "Update available."
   fi
   exit 0
 else
   if [ "${DISPLAY_POK_MONITOR_MESSAGE,,}" = "true" ]; then
-    echo "No updates."
+    info "No updates."
   fi
   exit 1
 fi

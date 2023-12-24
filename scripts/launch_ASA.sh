@@ -1,16 +1,18 @@
 #!/bin/bash
 
+source /usr/games/scripts/logger.sh
+
 # load environment variables from .env file
 load_env() {
   ENV_FILE="${ENV_FILE:-"/data/.env"}"
   if [ -f "$ENV_FILE" ]; then
-    echo "Loading environment variables from $ENV_FILE"
+    debug "Loading environment variables from $ENV_FILE"
     set -o allexport
     # shellcheck disable=SC1090
     source "$ENV_FILE"
     set +o allexport
   else
-    echo "No .env file found. Using default values."
+    debug "No .env file found. Using default values."
   fi
 }
 
@@ -19,6 +21,7 @@ initialize_variables() {
   load_env
 
   export DISPLAY=:0.0
+  DEBUG="${DEBUG:-"FALSE"}"
   USERNAME=anonymous
   APPID=2430930
   ASA_DIR="/usr/games/.wine/drive_c/POK/Steam/steamapps/common/ARK Survival Ascended Dedicated Server/ShooterGame"
@@ -39,7 +42,7 @@ initialize_variables() {
     # copy the default game.ini and gameusersettings.ini files from /usr/games/defaults/
     local ini_dir
     ini_dir="$ASA_DIR/Saved/Config/WindowsServer"
-    echo "Resetting game settings to defaults"
+    info "Resetting game settings to defaults"
     cp -f /usr/games/defaults/Game.ini "$ini_dir/Game.ini"
     chown "$PUID":"$PGID" "${ini_dir}/Game.ini"
     chmod 755 "${ini_dir}/Game.ini"
@@ -61,7 +64,7 @@ initialize_variables() {
   # if the password is not set, generate a random one
   if [ -z "$SERVER_ADMIN_PASSWORD" ]; then
     SERVER_ADMIN_PASSWORD=$(tr -dc 'a-zA-Z0-9' </dev/urandom | fold -w 20 | head -n 1)
-    echo "Generated server admin password: $ASA_SERVER_ADMIN_PASSWORD"
+    info "Generated server admin password: $ASA_SERVER_ADMIN_PASSWORD"
   fi
 
   # Set Server password from password file if set
@@ -75,7 +78,7 @@ initialize_variables() {
   # validate the password if it's set
   if [ -n "$SERVER_PASSWORD" ]; then
     if ! [[ "$SERVER_PASSWORD" =~ ^[a-zA-Z0-9]+$ ]]; then
-      echo "ERROR: The server password must contain only numbers or characters."
+      error "The server password must contain only numbers or characters."
       exit 1
     fi
   fi
@@ -228,6 +231,8 @@ initialize_variables() {
 
   ALLOW_THIRD_PERSON_VIEW="$(get_bool "ALLOW_THIRD_PERSON_VIEW" "TRUE")"
   ENABLE_MOTD="$(get_bool "ENABLE_MOTD" "FALSE")"
+
+
 }
 
 is_url() {
@@ -239,7 +244,7 @@ is_url() {
     local value="${!var_name}"
     if [ -n "$value" ]; then
       if ! [[ "$value" =~ ^http:// ]]; then
-        echo "ERROR: The $var_name must be a valid URL. It must start with http://; https:// is not supported."
+        error "The $var_name must be a valid URL. It must start with http://; https:// is not supported."
         exit 1
       fi
     fi
@@ -280,19 +285,19 @@ is_numeric() {
     value="${!var_name}"
     if [ -n "$value" ]; then
       if ! [[ "$value" =~ ^-?[0-9]+(\.[0-9]+)?$ ]]; then
-        echo "ERROR: The $var_name must be a number."
+        error "The $var_name must be a number."
         exit 1
       fi
     fi
     if [ -n "$min" ]; then
       if (($(echo "$value < $min" | bc -l))); then
-        echo "ERROR: The $var_name must be greater than or equal to $min."
+        error "The $var_name must be greater than or equal to $min."
         exit 1
       fi
     fi
     if [ -n "$max" ]; then
       if (($(echo "$value > $max" | bc -l))); then
-        echo "ERROR: The $var_name must be less than or equal to $max."
+        error "The $var_name must be less than or equal to $max."
         exit 1
       fi
     fi
@@ -426,12 +431,12 @@ update_ini_setting_quote() {
   # Check if the file exists
   if [ -f "$ini_file" ]; then
     if [ -n "$value" ]; then
-      echo "Updating [$section] $setting=\"$value\" in $ini_file"
+      debug "Updating [$section] $setting=\"$value\" in $ini_file"
       ini-file set --section "$section" --key "$setting" --value "$value" "$ini_file"
-      echo "Quoting [$section] $setting=\"$value\" in $ini_file"
+      debug "Quoting [$section] $setting=\"$value\" in $ini_file"
       sed -i "s<${setting}=.*<${setting}=\"${value}\"<g" "$ini_file"
     else
-      echo "$ini_file not found."
+      warn "$ini_file not found."
     fi
   fi
 }
@@ -449,20 +454,20 @@ update_ini_setting() {
   # Check if the file exists
   if [ -f "$ini_file" ]; then
     if [ -n "$value" ]; then
-      echo "Updating [$section] $setting=$value in $ini_file"
+      debug "Updating [$section] $setting=$value in $ini_file"
       ini-file set --section "$section" --key "$setting" --value "$value" "$ini_file"
     fi
   else
-    echo "$ini_file not found."
+    warn "$ini_file not found."
   fi
 }
 
 # Check if the Cluster directory exists
 cluster_dir() {
   if [ -d "$CLUSTER_DIR" ]; then
-    echo "Cluster directory already exists. Skipping folder creation."
+    debug "Cluster directory already exists. Skipping folder creation."
   else
-    echo "Creating Cluster Folder..."
+    info "Creating Cluster Folder..."
     mkdir -p "$CLUSTER_DIR"
   fi
 }
@@ -483,7 +488,7 @@ determine_map_path() {
     else
       MAP_PATH="${MAP_NAME}_WP"
     fi
-    echo "Using map: $MAP_PATH"
+    info "Using map: $MAP_PATH"
     ;;
   esac
 }
@@ -513,16 +518,16 @@ install_server() {
   current_build_id=$(get_current_build_id)
 
   if [ -z "$saved_build_id" ] || [ "$saved_build_id" != "$current_build_id" ]; then
-    echo "New server installation or update required..."
+    info "New server installation or update required..."
     touch /usr/games/updating.flag
-    echo "Current build ID is $current_build_id, initiating installation/update..."
+    info "Current build ID is $current_build_id, initiating installation/update..."
     sudo -u games wine "$PROGRAM_FILES/Steam/steamcmd.exe" +login "$USERNAME" +force_install_dir "$ASA_DIR" +app_update "$APPID" +@sSteamCmdForcePlatformType windows +quit
     # Copy the acf file to the persistent volume
     cp "/usr/games/.wine/drive_c/POK/Steam/steamapps/appmanifest_$APPID.acf" "$PERSISTENT_ACF_FILE"
-    echo "Installation or update completed successfully."
+    info "Installation or update completed successfully."
     rm -f /usr/games/updating.flag
   else
-    echo "No update required. Server build ID $saved_build_id is up to date."
+    info "No update required. Server build ID $saved_build_id is up to date."
   fi
 }
 
@@ -533,16 +538,16 @@ update_server() {
   current_build_id=$(get_current_build_id)
 
   if [ -z "$saved_build_id" ] || [ "$saved_build_id" != "$current_build_id" ]; then
-    echo "Server update detected..."
+    info "Server update detected..."
     touch /usr/games/updating.flag
-    echo "Updating server to build ID $current_build_id from $saved_build_id..."
+    info "Updating server to build ID $current_build_id from $saved_build_id..."
     sudo -u games wine "$PROGRAM_FILES/Steam/steamcmd.exe" +login "$USERNAME" +force_install_dir "$ASA_DIR" +app_update "$APPID" +@sSteamCmdForcePlatformType windows +quit
     # Copy the acf file to the persistent volume
     cp "/usr/games/.wine/drive_c/POK/Steam/steamapps/appmanifest_$APPID.acf" "$PERSISTENT_ACF_FILE"
-    echo "Server update completed successfully."
+    info "Server update completed successfully."
     rm -f /usr/games/updating.flag
   else
-    echo "Server is already running the latest build ID $saved_build_id. Proceeding to start the server."
+    info "Server is already running the latest build ID $saved_build_id. Proceeding to start the server."
   fi
 }
 
@@ -552,7 +557,7 @@ save_complete_check() {
   log_file="$ASA_DIR/Saved/Logs/ShooterGame.log"
   # Check if the "World Save Complete" message is in the log file
   if tail -n 10 "$log_file" | grep -q "World Save Complete"; then
-    echo "Save operation completed."
+    info "Save operation completed."
     return 0
   else
     return 1
@@ -561,25 +566,23 @@ save_complete_check() {
 
 # Function to handle graceful shutdown
 shutdown_handler() {
-  echo "Initiating graceful shutdown..."
-  echo "Notifying players about the immediate shutdown and save..."
+  info "Initiating graceful shutdown..."
+  info "Notifying players about the immediate shutdown and save..."
   rcon-cli --host "localhost" --port "$RCON_PORT" --password "$SERVER_ADMIN_PASSWORD" "ServerChat Immediate server shutdown initiated. Saving the world..."
 
-  echo "Saving the world..."
+  info "Saving the world..."
   rcon-cli --host "localhost" --port "$RCON_PORT" --password "$SERVER_ADMIN_PASSWORD" "saveworld"
 
   # Initial delay to avoid catching a previous save message
-  echo "Waiting a few seconds before checking for save completion..."
+  info "Waiting a few seconds before checking for save completion..."
   sleep 5 # Initial delay, can be adjusted based on server behavior
 
   # Wait for save to complete
-  echo "Waiting for save to complete..."
+  info "Waiting for save to complete..."
   while ! save_complete_check; do
     sleep 5 # Check every 5 seconds
   done
-
-  echo "World saved. Shutting down the server..."
-
+  info "World saved. Shutting down the server..."
   exit 0
 }
 
@@ -620,7 +623,7 @@ start_server() {
   if [ "${BATTLEEYE,,}" = "true" ]; then
     battleye_arg="-UseBattlEye"
   else
-    echo "WARNING: BattlEye is disabled."
+    warn "BattlEye is disabled."
     battleye_arg="-NoBattlEye"
   fi
 
@@ -635,14 +638,14 @@ start_server() {
   # create a cron job to execute /usr/games/scripts/pull_whitelist.sh every X minutes
   if [ "${ENABLE_WHITELIST,,}" = "true" ]; then
     if [[ -z "${WHITELIST_URL// /}" ]]; then
-      echo "ERROR: The WHITELIST_URL must be set when ENABLE_WHITELIST is set to true."
+      error "The WHITELIST_URL must be set when ENABLE_WHITELIST is set to true."
       exit 1
     fi
     if [[ -z "${WHITELIST_PULL_INTERVAL// /}" ]]; then
-      echo "ERROR: The WHITELIST_PULL_INTERVAL must be set when ENABLE_WHITELIST is set to true."
+      error "The WHITELIST_PULL_INTERVAL must be set when ENABLE_WHITELIST is set to true."
       exit 1
     fi
-    echo "Creating cron job to pull whitelist every $WHITELIST_PULL_INTERVAL minutes..."
+    debug "Creating cron job to pull whitelist every $WHITELIST_PULL_INTERVAL minutes..."
     (
       crontab -l 2>/dev/null
       echo "*/$WHITELIST_PULL_INTERVAL * * * * /usr/games/scripts/pull_whitelist.sh"
@@ -650,7 +653,7 @@ start_server() {
     bash /usr/games/scripts/pull_whitelist.sh
   else
     # remove the crontab job if it exists
-    echo "Removing whitelist cron job..."
+    debug "Removing whitelist cron job..."
     (
       crontab -l 2>/dev/null | grep -v "/usr/games/scripts/pull_whitelist.sh"
     ) | crontab -
@@ -659,14 +662,14 @@ start_server() {
   # create a cron job to execute /usr/games/scripts/pull_no_check_list.sh every X minutes
   if [ "${ENABLE_NO_CHECK_LIST,,}" = "true" ]; then
     if [[ -z "${NO_CHECK_LIST_URL// /}" ]]; then
-      echo "ERROR: The NO_CHECK_LIST_URL must be set when ENABLE_NO_CHECK_LIST is set to true."
+      error "The NO_CHECK_LIST_URL must be set when ENABLE_NO_CHECK_LIST is set to true."
       exit 1
     fi
     if [[ -z "${NO_CHECK_LIST_PULL_INTERVAL// /}" ]]; then
-      echo "ERROR: The NO_CHECK_LIST_PULL_INTERVAL must be set when ENABLE_NO_CHECK_LIST is set to true."
+      error "The NO_CHECK_LIST_PULL_INTERVAL must be set when ENABLE_NO_CHECK_LIST is set to true."
       exit 1
     fi
-    echo "Creating cron job to pull no check list every $NO_CHECK_LIST_PULL_INTERVAL minutes..."
+    debug "Creating cron job to pull no check list every $NO_CHECK_LIST_PULL_INTERVAL minutes..."
     (
       crontab -l 2>/dev/null
       echo "*/$NO_CHECK_LIST_PULL_INTERVAL * * * * /usr/games/scripts/pull_no_check_list.sh"
@@ -674,7 +677,7 @@ start_server() {
     bash /usr/games/scripts/pull_no_check_list.sh
   else
     # remove the crontab job if it exists
-    echo "Removing no check list cron job..."
+    debug "Removing no check list cron job..."
     (
       crontab -l 2>/dev/null | grep -v "/usr/games/scripts/pull_no_check_list.sh"
     ) | crontab -
@@ -688,11 +691,11 @@ start_server() {
     "$mods_arg" "$battleye_arg" 2>/dev/null &
 
   SERVER_PID=$!
-  echo "Server process started with PID: $SERVER_PID"
+  info "Server process started with PID: $SERVER_PID"
 
   # Immediate write to PID file
   echo $SERVER_PID >/usr/games/ark_server.pid
-  echo "PID $SERVER_PID written to /usr/games/ark_server.pid"
+  debug "PID $SERVER_PID written to /usr/games/ark_server.pid"
 
   # Wait for the log file to be created with a timeout
   local LOG_FILE
@@ -704,7 +707,7 @@ start_server() {
     ((TIMEOUT--))
   done
   if [[ ! -f "$LOG_FILE" ]]; then
-    echo "Log file not found after waiting. Please check server status."
+    warn "Log file not found after waiting. Please check server status."
     return
   fi
 
@@ -718,10 +721,10 @@ start_server() {
   TAIL_PID=$!
 
   # Wait for the server to fully start
-  echo "Waiting for server to start..."
+  info "Waiting for server to start..."
   while true; do
     if grep -q "wp.Runtime.HLOD" "$LOG_FILE"; then
-      echo "Server started. PID: $SERVER_PID"
+      info "Server started. PID: $SERVER_PID"
       break
     fi
     sleep 10

@@ -1,5 +1,6 @@
 #!/bin/bash
 # HEALTHCHECK SCRIPT USED BY DOCKER CONTAINER
+source /usr/games/scripts/logger.sh
 
 PID_FILE="/usr/games/ark_server.pid"
 UPDATE_FLAG="/usr/games/updating.flag"

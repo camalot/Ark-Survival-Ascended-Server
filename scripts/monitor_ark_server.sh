@@ -1,4 +1,5 @@
 #!/bin/bash
+source /usr/games/scripts/logger.sh
 
 PID_FILE="/usr/games/ark_server.pid"
 LAUNCH_SCRIPT="/usr/games/scripts/launch_ASA.sh"
@@ -57,15 +58,15 @@ is_process_running() {
     pid=$(cat "$PID_FILE")
     if ps -p "$pid" >/dev/null 2>&1; then
       if [ "${DISPLAY_POK_MONITOR_MESSAGE}" = "TRUE" ]; then
-        echo "ARK server process (PID: $pid) is running."
+        info "ARK server process (PID: $pid) is running."
       fi
       return 0
     else
-      echo "ARK server process (PID: $pid) is not running."
+      info "ARK server process (PID: $pid) is not running."
       return 1
     fi
   else
-    echo "PID file not found."
+    warn "PID file not found."
     return 1
   fi
 }
@@ -73,7 +74,7 @@ is_process_running() {
 # Function to check if server is updating
 is_server_updating() {
   if [ -f "/usr/games/updating.flag" ]; then
-    echo "Server is currently updating."
+    info "Server is currently updating."
     return 0
   else
     return 1
@@ -82,13 +83,13 @@ is_server_updating() {
 
 # Restart the ARK server
 restart_server() {
-  echo "Gracefully shutting down the ARK server..."
+  info "Gracefully shutting down the ARK server..."
   send_rcon_command "DoExit"
 
   # Wait for a bit to ensure the server has completely shut down
   sleep 30
 
-  echo "Starting the ARK server..."
+  info "Starting the ARK server..."
   bash "$LAUNCH_SCRIPT"
 }
 
@@ -108,7 +109,7 @@ monitor_start() {
   while true; do
     # Check if the server is currently updating (based on the presence of the updating.flag file)
     if [ -f "/usr/games/updating.flag" ]; then
-      echo "Update/Installation in progress, waiting for it to complete..."
+      info "Update/Installation in progress, waiting for it to complete..."
       sleep 60
       continue # Skip the rest of this loop iteration
     fi
@@ -135,7 +136,7 @@ monitor_start() {
 
     # Restart the server if it's not running and not currently updating
     if ! is_process_running && ! is_server_updating; then
-      echo "Server is not running, restarting..."
+      info "Server is not running, restarting..."
       restart_server
     fi
 

@@ -1,5 +1,4 @@
 #!/bin/bash
-
 # RCON connection details
 RCON_HOST="localhost"
 RCON_PORT="${RCON_PORT:-27020}"          # Default RCON port if not set in docker-compose

@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+source /usr/games/scripts/logger.sh
 
 # Define paths
 ASA_DIR="/usr/games/.wine/drive_c/POK/Steam/steamapps/common/ARK Survival Ascended Dedicated Server/ShooterGame"
@@ -17,8 +18,8 @@ CRONTAB_DIR="/var/spool/cron/crontabs/games"
 PUID="${PUID:-1001}"
 PGID="${PGID:-1001}"
 
-echo "PUID: $PUID"
-echo "PGID: $PGID"
+debug "PUID: $PUID"
+debug "PGID: $PGID"
 
 # Function to check if vm.max_map_count is set to a sufficient value
 check_vm_max_map_count() {
@@ -28,15 +29,13 @@ check_vm_max_map_count() {
   current_map_count=$(cat /proc/sys/vm/max_map_count)
 
   if [ "$current_map_count" -lt "$required_map_count" ]; then
-    echo "ERROR: The vm.max_map_count on the host system is too low ($current_map_count) and needs to be at least $required_map_count."
-    echo "To fix this issue temporarily (until the next reboot), run the following command on your Docker host:"
-    echo "sudo sysctl -w vm.max_map_count=$required_map_count"
-    echo "For a permanent fix, add the following line to /etc/sysctl.conf on your Docker host and then run 'sysctl -p':"
-    echo "vm.max_map_count=$required_map_count"
-    echo ""
-    echo "sudo -s echo "vm.max_map_count=$required_map_count" >> /etc/sysctl.conf && sudo sysctl -p"
-    echo ""
-    echo "After making this change, please restart the Docker container."
+    error "The vm.max_map_count on the host system is too low ($current_map_count) and needs to be at least $required_map_count.\n" \
+"To fix this issue temporarily (until the next reboot), run the following command on your Docker host:\n" \
+"sudo sysctl -w vm.max_map_count=$required_map_count\n\n" \
+"For a permanent fix, add the following line to /etc/sysctl.conf on your Docker host and then run 'sysctl -p':\n" \
+"vm.max_map_count=$required_map_count\n\n" \
+"sudo -s echo "vm.max_map_count=$required_map_count" >> /etc/sysctl.conf && sudo sysctl -p\n\n" \
+"After making this change, please restart the Docker container."
     exit 1
   fi
 }
@@ -67,7 +66,7 @@ take_ownership() {
   # - sudo : sudo: you do not exist in the passwd database
   # - open /usr/games/.wine/drive_c/POK/Steam/steamapps/common/ARK Survival Ascended Dedicated Server/ShooterGame/Saved/Config/WindowsServer/GameUserSettings.ini: permission denied
 
-  echo "Taking ownership of files and folders for PUID:GUID $PUID:$PGID"
+  debug "Taking ownership of files and folders for PUID:GUID $PUID:$PGID"
   sudo groupmod -o -g "$PGID" games
   sudo usermod -o -u "$PUID" -g games games
   sudo usermod -a -G crontab games
@@ -105,7 +104,7 @@ take_ownership() {
   sudo chown -R games:crontab "$CRONTAB_DIR"
   sudo chmod 600 "$CRONTAB_DIR"
 
-  echo "Finished taking ownership of files and folders for PUID:GUID $PUID:$PGID"
+  debug "Finished taking ownership of files and folders for PUID:GUID $PUID:$PGID"
 }
 
 # Call copy_default_configs function
