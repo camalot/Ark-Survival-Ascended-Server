@@ -30,7 +30,7 @@ check_vm_max_map_count() {
   current_map_count=$(cat /proc/sys/vm/max_map_count)
 
   if [ "$current_map_count" -lt "$required_map_count" ]; then
-    error << EOF
+    error <<EOF
 The vm.max_map_count on the host system is too low ($current_map_count) and needs to be at least $required_map_count.
 To fix this issue temporarily (until the next reboot), run the following command on your Docker host:
 
